@@ -293,10 +293,19 @@
   .script .sbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .script textarea,.script input{width:100%;margin-top:8px}
   .empty{color:var(--soft)}
+  .requests{display:grid;gap:12px;margin:6px 0 26px}
+  .requests h3{font-size:1.05rem;font-weight:700;display:flex;align-items:center;gap:8px}
+  .requests h3 .count{background:var(--orange);color:#1a1b22;border-radius:99px;font-size:.8rem;padding:1px 9px}
+  .request{background:var(--row);border:3px solid var(--orange);border-radius:10px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+  .request .name{font-weight:700}
+  .request .rmsg{color:var(--soft);white-space:pre-wrap;margin-top:6px;font-size:.95rem}
+  .request .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .tabs .count{display:inline-block;margin-left:6px;background:var(--orange);color:#1a1b22;border-radius:99px;font-size:.72rem;padding:0 7px;vertical-align:2px}
   @media (max-width:640px){
     .person{grid-template-columns:auto 1fr}
     .person .btns{grid-column:1 / -1;justify-content:flex-start}
-    .script{grid-template-columns:1fr}
+    .script,.request{grid-template-columns:1fr}
+    .request .btns{justify-content:flex-start}
     .script .sbtns{justify-content:flex-start}
   }
 </style>
@@ -373,6 +382,7 @@
     <div class="banner" id="ks-banner" hidden>Kill switch is on: Monarch is paused for everyone.</div>
 
     <div data-pane="people">
+      <div class="requests" id="requests" hidden></div>
       <p class="sub" id="summary"></p>
       <form class="add card" id="f-add" style="margin-top:14px">
         <input class="field" type="text" id="new-name" placeholder="Name" maxlength="80">
@@ -525,6 +535,34 @@
       }).catch(function (err) { say($("add-msg"), err.message, true); });
   };
 
+  // ----- access requests -----
+  function loadRequests() {
+    return api("/requests").then(function (d) {
+      var list = d.requests || [], box = $("requests"), tab = document.querySelector('.tabs button[data-tab="people"]');
+      tab.innerHTML = "People" + (list.length ? '<span class="count">' + list.length + "</span>" : "");
+      box.hidden = !list.length;
+      box.innerHTML = list.length ? '<h3>Access requests <span class="count">' + list.length + "</span></h3>" + list.map(function (r) {
+        return '<div class="request"><div><div class="name">' + esc(r.name) + "</div>" +
+          '<div class="meta">' + esc(r.email) + (r.team ? " · " + esc(r.team) : "") + " · " + ago(r.updated_at) + "</div>" +
+          (r.message ? '<div class="rmsg">' + esc(r.message) + "</div>" : "") + "</div>" +
+          '<div class="btns"><button class="btn" data-approve="' + r.id + '" data-name="' + esc(r.name) + '">Approve + invite</button>' +
+          '<button class="btn danger" data-decline="' + r.id + '" data-name="' + esc(r.name) + '">Decline</button></div></div>';
+      }).join("") : "";
+    });
+  }
+  $("requests").onclick = function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var p;
+    if (b.dataset.approve) p = api("/requests/" + b.dataset.approve + "/approve", { method: "POST", body: {} }).then(function (d) {
+      say($("add-msg"), d.existed ? b.dataset.name + " already had access." : b.dataset.name + " is added, and an invite email is on its way.");
+    });
+    else if (b.dataset.decline) {
+      if (!confirm("Decline " + b.dataset.name + "'s request? It's removed without an email to them.")) return;
+      p = api("/requests/" + b.dataset.decline, { method: "DELETE" });
+    }
+    if (p) { b.disabled = true; p.then(function () { return Promise.all([loadRequests(), loadPeople()]); }).catch(function (err) { b.disabled = false; alert(err.message); }); }
+  };
+
   // ----- settings -----
   function loadSettings() {
     return api("/settings").then(function (s) {
@@ -652,7 +690,7 @@
       myEmail = me.email; maxDevices = me.max_devices;
       $("who-email").textContent = "Signed in as " + me.email;
       $("who").hidden = false; $("signin").hidden = true; $("app").hidden = false;
-      return Promise.all([loadPeople(), loadSettings(), loadScripts()]);
+      return Promise.all([loadRequests(), loadPeople(), loadSettings(), loadScripts()]);
     }).catch(function (err) {
       if (err.status === 401) { $("app").hidden = true; $("who").hidden = true; $("signin").hidden = false; }
       else say($("login-msg"), err.message || "Can't reach the Monarch server right now.", true);
