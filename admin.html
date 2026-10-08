@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Monarch</title>
+<meta name="description" content="Monarch admin.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1b22; --panel:#2e2e2e; --row:#22232b;
+    --navy:#273597; --rule:#4a55a8; --blue:#2c4fbc;
+    --purple:#ac5ce6; --lilac:#dcbaf4;
+    --orange:#ffac01; --orange-dk:#6b4a00; --yellow:#ffe800; --red:#ff2a2a;
+    --text:#fff; --soft:#cfd0da; --muted:#8a8b96; --dot:#ffcc00;
+    --font:"Futura Std",Futura,"Jost","Century Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ---------- Monarch UI components ---------- */
+  .spark{width:1em;height:1em;flex:none;display:inline-block}
+
+  /* Purple pill — "DOMINATING" / "SUBJECT CLAUDE" / "Install" */
+  .pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:6px 20px;border-radius:99px;
+        background:#2a2a33;border:3px solid var(--purple);overflow:hidden;
+        font-weight:800;font-style:oblique;letter-spacing:.04em;white-space:nowrap}
+  .pill::before,.pill::after{content:"";position:absolute;top:-4px;bottom:-4px;width:9px;background:rgba(255,255,255,.22);transform:skewX(-30deg);pointer-events:none}
+  .pill::before{left:22%;box-shadow:13px 0 0 rgba(255,255,255,.22)} .pill::after{right:16%}
+  .pill.lg{font-size:1.25rem;padding:9px 28px;text-transform:uppercase}
+  .pill.sm{font-size:.82rem;padding:4px 16px;text-transform:uppercase}
+  a.pill,button.pill{transition:transform .15s,box-shadow .15s}
+  a.pill:hover,button.pill:hover{transform:translateY(-2px);box-shadow:0 0 0 4px rgba(172,92,230,.25)}
+
+  /* Orange status badge — "SERVING THE MONARCH" / "DOMINATED" */
+  .status{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 14px;border-radius:99px;
+          background:var(--bg);border:4px solid var(--orange);box-shadow:inset 0 0 0 3px var(--orange-dk);overflow:hidden;
+          font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);font-size:.82rem;transition:border-color .3s,color .3s,box-shadow .3s}
+  .status::before,.status::after{content:"";position:absolute;top:-4px;bottom:-4px;width:7px;background:rgba(255,255,255,.2);transform:skewX(-30deg)}
+  .status::before{left:13%;box-shadow:10px 0 0 rgba(255,255,255,.2)} .status::after{right:12%}
+  .status .spark{font-size:1.5em}
+  .status span{flex:1;text-align:center}
+  .status.off{border-color:var(--purple);box-shadow:none;color:#fff;font-weight:500;letter-spacing:.04em}
+  .status.off .spark{visibility:hidden}
+  .status.fail{border-color:var(--red);box-shadow:inset 0 0 0 3px #5a1010;color:var(--red);font-style:oblique;font-weight:800}
+
+  /* Navy action button — "Send Selection to AE" */
+  .act{display:block;width:100%;padding:9px 14px;border-radius:9px;background:var(--bg);border:3px solid var(--navy);
+       font-weight:700;text-align:center;transition:border-color .15s,background .15s}
+  .act:hover{border-color:var(--blue);background:#1f2130}
+  .act.on{border-color:var(--orange)}
+
+  /* Orange progress bar */
+  .prog{position:relative;height:30px;border-radius:99px;background:var(--bg);border:3px solid var(--orange-dk);overflow:hidden}
+  .prog .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--orange);border-radius:99px;transition:width .25s linear}
+  .prog .spark{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:18px;z-index:2}
+  .prog .spark{--sp-o:#fff;--sp-i:var(--orange)}
+  .prog .txt{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:.85rem;z-index:2}
+
+  .log{background:var(--bg);border-radius:4px;padding:12px 14px;color:var(--muted);font-size:.85rem;line-height:1.6;overflow-y:auto}
+  .log b{font-weight:500;color:var(--soft)}
+
+  /* App glyph — purple-rimmed Adobe tiles */
+  .glyph{display:grid;place-items:center;width:42px;height:42px;border-radius:7px;border:3px solid var(--purple);font-weight:700;font-size:1.05rem;flex:none}
+  .g-id{background:#49021f;color:#ff3366} .g-ai{background:#330000;color:#ff9a00}
+  .g-ps{background:#001e36;color:#31a8ff} .g-ae{background:#00005b;color:#9999ff} .g-cr{background:#14301e;color:#6ad892}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--dot);flex:none}
+  .dot.idle{background:#bdbdbd}
+
+  /* ---------- Layout ---------- */
+  nav{position:sticky;top:0;z-index:30;background:rgba(26,27,34,.92);backdrop-filter:blur(10px);border-bottom:2px solid var(--rule)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:18px}
+  .brand .ol{height:44px;width:auto}
+  .brand .wm{height:30px;width:auto}
+  .nav-r{display:flex;align-items:center;gap:22px}
+  .nav-links{display:flex;gap:24px;list-style:none;font-weight:500;color:var(--soft)}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-pill{display:flex;align-items:center;gap:8px}
+  .nav-pill .spark{font-size:22px}
+
+  header{position:relative;padding:72px 0 96px;overflow:hidden}
+  .ghost{position:absolute;right:-60px;bottom:-80px;width:620px;opacity:.07;pointer-events:none}
+  .hero{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero-tag{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+  .hero-tag small{color:var(--muted);font-size:.95rem}
+  h1{font-size:clamp(2.5rem,5.6vw,4.4rem);line-height:1.04;font-weight:700;margin-bottom:22px}
+  h1 em{font-style:oblique;font-weight:800;color:var(--orange)}
+  .lead{color:var(--soft);font-size:1.15rem;max-width:520px;margin-bottom:34px}
+  .btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btns .act{width:auto;padding:10px 26px}
+  .hero-art{position:relative;max-width:420px;justify-self:end;width:100%}
+  .hero-art .mark{width:100%;height:auto;filter:drop-shadow(0 24px 50px rgba(44,79,188,.55))}
+  .hero-art .spark{position:absolute;animation:tw 3s ease-in-out infinite}
+  .hero-art .s1{top:-6%;right:6%;font-size:46px}
+  .hero-art .s2{bottom:4%;left:-4%;font-size:30px;animation-delay:1s}
+  .hero-art .s3{top:40%;right:-5%;font-size:22px;animation-delay:2s}
+  @keyframes tw{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.55) rotate(25deg)}}
+
+  section{padding:88px 0;border-top:2px solid var(--rule)}
+  .head{margin-bottom:40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);font-size:.85rem}
+  .eyebrow .spark{font-size:18px}
+  h2{font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.12;font-weight:700;margin:12px 0 10px}
+  .sub{color:var(--soft);max-width:620px}
+
+  /* Plugin rows (dashboard) */
+  .rows{border-top:2px solid var(--rule)}
+  .prow{display:flex;align-items:center;gap:18px;padding:18px 4px;border-bottom:2px solid var(--rule)}
+  .prow .meta{flex:1;min-width:0}
+  .prow .meta h3{font-weight:500;font-size:1.15rem}
+  .prow .meta p{color:var(--muted);font-size:.95rem}
+  .prow .pill{min-width:132px}
+
+  /* Live panel demo */
+  .demo{display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:start}
+  .panel{background:var(--panel);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+  .panel .log{height:150px;margin-top:6px}
+  .panel .prog{display:none}
+  .panel .prog.show{display:block}
+  .demo-copy .sub{margin-bottom:24px}
+  .tool-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .tool{padding:18px;border-radius:9px;background:var(--row);border:3px solid var(--navy);transition:border-color .2s}
+  .tool:hover,.tool.on{border-color:var(--orange)}
+  .tool h3{font-weight:700;font-size:1.02rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .tool h3 .spark{font-size:16px}
+  .tool p{color:var(--soft);font-size:.92rem}
+  .tool small{display:block;margin-top:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.06em;font-size:.7rem;color:var(--purple)}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;counter-reset:s}
+  .step{counter-increment:s;background:var(--panel);border-radius:6px;padding:22px}
+  .step::before{content:"0" counter(s);display:block;font-size:2.4rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1;margin-bottom:12px}
+  .step h3{font-weight:700;margin-bottom:6px}
+  .step p{color:var(--soft);font-size:.95rem}
+
+  /* Coming soon — loading state */
+  .cta{text-align:center}
+  .loading{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 auto 26px}
+  .compass{width:64px;height:64px;animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading em{color:var(--soft);font-style:oblique}
+  .cta .sub{margin:0 auto 30px}
+  .dl-meta{margin-top:14px;color:var(--soft);font-size:.9rem}
+  .dl-steps{max-width:560px;margin:28px auto 0;text-align:left;color:var(--soft);line-height:1.55;padding-left:1.4em}
+  .dl-steps li{margin-bottom:10px}
+  .dl-steps b{color:var(--text,#fff)}
+
+  footer{border-top:2px solid var(--rule);padding:16px 0 22px;color:var(--muted);font-weight:700;font-size:.9rem}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media (max-width:900px){
+    .hero,.demo{grid-template-columns:1fr}
+    .hero-art{max-width:360px;justify-self:center;margin-top:10px}
+    .panel{max-width:360px}
+    .nav-links{display:none}
+  }
+  @media (max-width:520px){
+    .brand .ol{display:none}
+    .brand .wm{height:24px}
+    .nav-pill .spark{display:none}
+    .prow{display:grid;grid-template-columns:auto auto 1fr;column-gap:14px;row-gap:10px}
+    .prow .pill{grid-column:3;justify-self:start;min-width:0}
+    .pill.lg{font-size:1.05rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---------- About page ---------- */
+  .nav-links a[aria-current]{color:var(--orange)}
+  .about{padding:80px 0 88px;border-top:0}
+  .about .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+  .about h1{font-size:clamp(2.4rem,6vw,3.8rem);line-height:1.05;font-weight:800;font-style:oblique;margin:14px 0 8px}
+  .about .lead{font-size:1.25rem;color:var(--lilac);font-weight:500;margin-bottom:26px}
+  .about .story p{color:var(--soft);font-size:1.08rem;max-width:600px;margin-bottom:16px}
+  .about .story p strong{color:var(--text);font-weight:700}
+  .about-art{position:relative;justify-self:center;max-width:380px;width:100%}
+  .about-art .mark{width:100%;height:auto;aspect-ratio:900/771;filter:drop-shadow(0 0 40px rgba(172,92,230,.35))}
+  .about-art .spark{position:absolute}
+  .about-art .s1{font-size:34px;top:4%;left:2%}
+  .about-art .s2{font-size:22px;bottom:10%;right:4%}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .fact{background:var(--panel);border-radius:6px;padding:22px}
+  .fact b{display:block;font-size:2rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1.1;margin-bottom:6px}
+  .fact span{color:var(--soft);font-size:.95rem}
+  .about-badge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%)}
+  .fav-card{background:var(--row);border:3px solid var(--purple);border-radius:10px;padding:34px 32px;max-width:760px}
+  .fav-card .sub{max-width:none}
+  .contact{text-align:center}
+  .contact .sub{margin:0 auto 28px}
+  .contact .mail{display:block;margin-top:14px;color:var(--soft);font-weight:500}
+  .contact .mail:hover{color:var(--orange)}
+  @media (max-width:900px){
+    .about .wrap{grid-template-columns:1fr;gap:28px}
+    .about-art{max-width:260px;grid-row:1}
+  }
+
+  /* ---------- Tools guide (members only) ---------- */
+  [hidden]{display:none!important}
+  .g-head{padding:64px 0 28px;border-top:0}
+  .g-head h1{font-size:clamp(2.2rem,5.5vw,3.4rem);line-height:1.05;font-weight:800;font-style:oblique;margin:14px 0 8px}
+  .g-head .sub{max-width:640px}
+  .g-who{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px;color:var(--soft);font-size:.95rem}
+  .g-who button{background:none;border:0;color:var(--lilac);text-decoration:underline;padding:0;font-size:.95rem}
+  .signin-card{max-width:440px;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:28px}
+  .signin-card label{display:block;font-weight:700;margin:0 0 8px}
+  .signin-card input{width:100%;font:inherit;font-size:1.05rem;padding:11px 14px;border-radius:8px;border:2px solid var(--rule);background:var(--bg);color:var(--text);margin-bottom:14px}
+  .signin-card input:focus{outline:none;border-color:var(--yellow)}
+  .signin-card .code{letter-spacing:.35em;font-size:1.3rem}
+  .signin-card .msg{min-height:1.4em;color:var(--soft);font-size:.92rem;margin-top:12px}
+  .signin-card .msg.err{color:#ff8a8a}
+  .signin-card .alt{background:none;border:0;color:var(--lilac);text-decoration:underline;padding:0;margin-top:10px;font-size:.9rem}
+  .signin-card .pill{border:3px solid var(--purple);cursor:pointer}
+  .g-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:36px;align-items:start;padding-top:8px;padding-bottom:80px}
+  .g-toc{position:sticky;top:92px;max-height:calc(100vh - 110px);overflow:auto;padding-right:6px}
+  .g-toc input{width:100%;font:inherit;padding:9px 12px;border-radius:8px;border:2px solid var(--rule);background:var(--row);color:var(--text);margin-bottom:16px}
+  .g-toc input:focus{outline:none;border-color:var(--yellow)}
+  .g-toc .grp{font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.06em;font-size:.78rem;color:var(--yellow);margin:16px 0 6px}
+  .g-toc a{display:block;padding:5px 10px;border-radius:6px;color:var(--soft);font-size:.95rem}
+  .g-toc a:hover,.g-toc a.on{background:var(--row);color:var(--text)}
+  .g-doc h1.grp-title{font-size:1.6rem;font-weight:800;font-style:oblique;color:var(--orange);margin:38px 0 14px}
+  .g-doc h1.grp-title:first-child{margin-top:0}
+  .g-doc{min-width:0}
+  .tool-doc{overflow-wrap:anywhere;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:26px 28px;margin-bottom:22px;scroll-margin-top:90px}
+  .tool-doc h2{font-size:1.55rem;font-weight:700;margin-bottom:4px}
+  .tool-doc .meta{color:var(--lilac);font-size:.92rem;margin-bottom:14px}
+  .tool-doc h3{font-size:.85rem;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);margin:22px 0 8px}
+  .tool-doc p{color:var(--soft);margin-bottom:10px}
+  .tool-doc ul,.tool-doc ol{color:var(--soft);padding-left:1.3em;margin-bottom:10px}
+  .tool-doc li{margin-bottom:6px}
+  .tool-doc li ul,.tool-doc li ol{margin:6px 0 0}
+  .tool-doc strong{color:var(--text)}
+  .tool-doc code{background:var(--bg);padding:1px 6px;border-radius:4px;font-size:.9em}
+  .g-empty{color:var(--soft)}
+  #tocbox summary{display:none}
+  @media (max-width:900px){
+    #tocbox summary{display:block;cursor:pointer;font-weight:700;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;background:var(--row)}
+    #tocbox[open] summary{margin-bottom:6px}
+  }
+  @media (max-width:900px){
+    .g-layout{grid-template-columns:1fr;gap:18px}
+    .g-toc{position:static;max-height:none}
+    .tool-doc{padding:20px}
+  }
+
+  /* ---------- Admin ---------- */
+  .tabs{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 26px}
+  .tabs button{font:inherit;font-weight:700;padding:8px 20px;border-radius:99px;border:3px solid var(--navy);background:var(--row);color:var(--soft)}
+  .tabs button.on{border-color:var(--purple);color:var(--text)}
+  .card{background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:22px}
+  .btn{font:inherit;font-weight:700;font-size:.9rem;padding:7px 14px;border-radius:8px;border:2px solid var(--rule);background:var(--bg);color:var(--text)}
+  .btn:hover{border-color:var(--yellow)}
+  .btn.danger{border-color:#7a2b2b;color:#ff9a9a}
+  .btn.small{font-size:.8rem;padding:4px 10px}
+  .field{font:inherit;padding:9px 12px;border-radius:8px;border:2px solid var(--rule);background:var(--bg);color:var(--text)}
+  .field:focus{outline:none;border-color:var(--yellow)}
+  .msg{min-height:1.4em;color:var(--soft);font-size:.92rem;margin-top:10px}
+  .msg.err{color:#ff8a8a}
+  .add{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .add .field{flex:1;min-width:180px}
+  .switch{display:flex;gap:8px;align-items:center;color:var(--soft)}
+  .switch input{accent-color:var(--purple);width:18px;height:18px}
+  .people{display:grid;gap:12px;margin-top:18px}
+  .person{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:16px 18px}
+  .person.off{opacity:.55}
+  .person .dot{margin-top:6px}
+  .person.off .dot{background:#bdbdbd}
+  .person .name{font-weight:700}
+  .person .meta,.meta{color:var(--soft);font-size:.9rem}
+  .tag{display:inline-block;margin-left:8px;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--yellow);border:1px solid var(--yellow);border-radius:99px;padding:1px 8px;vertical-align:2px}
+  .mac{color:var(--soft);font-size:.88rem;margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .person .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .banner{background:#3a1d1d;border:2px solid #ff5a5a;color:#ffb3b3;border-radius:8px;padding:10px 14px;margin-bottom:18px}
+  .settings .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .drop{border:3px dashed var(--rule);border-radius:10px;padding:26px;text-align:center;color:var(--soft);margin-bottom:16px}
+  .drop.over{border-color:var(--yellow);color:var(--text)}
+  .drop b{color:var(--text)}
+  .sbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .sbar .field{flex:1;min-width:200px}
+  .scripts{display:grid;gap:10px}
+  .script{background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
+  .script .sname{font-weight:700;word-break:break-all}
+  .script .snote{color:var(--soft);white-space:pre-wrap;margin-top:4px}
+  .script .stags span{display:inline-block;font-size:.75rem;color:var(--lilac);border:1px solid var(--purple);border-radius:99px;padding:0 8px;margin:6px 6px 0 0}
+  .script .sbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .script textarea,.script input{width:100%;margin-top:8px}
+  .empty{color:var(--soft)}
+  @media (max-width:640px){
+    .person{grid-template-columns:auto 1fr}
+    .person .btns{grid-column:1 / -1;justify-content:flex-start}
+    .script{grid-template-columns:1fr}
+    .script .sbtns{justify-content:flex-start}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sp" viewBox="0 0 24 24">
+    <path style="fill:var(--sp-o,#ffac01)" d="M12 0c.5 6 1.6 9.2 3 10.2 1.3 1 4.6 1.5 9 1.8-4.4.3-7.7.8-9 1.8-1.4 1-2.5 4.2-3 10.2-.5-6-1.6-9.2-3-10.2-1.3-1-4.6-1.5-9-1.8 4.4-.3 7.7-.8 9-1.8C10.4 9.2 11.5 6 12 0z"/>
+    <path style="fill:var(--sp-i,#fff)" d="M12 6.5c.3 3 .8 4.4 1.5 4.9.6.4 1.9.5 3.5.6-1.6.1-2.9.2-3.5.6-.7.5-1.2 1.9-1.5 4.9-.3-3-.8-4.4-1.5-4.9-.6-.4-1.9-.5-3.5-.6 1.6-.1 2.9-.2 3.5-.6.7-.5 1.2-1.9 1.5-4.9z"/>
+  </symbol>
+</svg>
+
+<nav>
+  <div class="wrap">
+    <a href="index.html" class="brand" aria-label="Monarch home">
+      <img class="ol" src="assets/logo-outline.webp" alt="" width="197" height="170">
+      <img class="wm" src="assets/wordmark.webp" alt="Monarch" width="614" height="152">
+    </a>
+    <div class="nav-r">
+      <ul class="nav-links">
+        <li><a href="index.html#suite">Suite</a></li>
+        <li><a href="index.html#panel">Tools</a></li>
+        <li><a href="index.html#how">How it works</a></li>
+        <li><a href="index.html#download">Download</a></li>
+        <li><a href="guide.html">Guide</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav-pill">
+        <svg class="spark"><use href="#sp"/></svg>
+        <span class="pill sm">Dominating</span>
+        <svg class="spark"><use href="#sp"/></svg>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section class="g-head" style="padding-bottom:18px">
+  <div class="wrap">
+    <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Admin</span>
+    <h1>Monarch admin</h1>
+    <div class="g-who" id="who" hidden><span id="who-email"></span><button id="signout">Sign out</button></div>
+  </div>
+</section>
+
+<section id="signin" hidden style="border-top:0;padding-top:0">
+  <div class="wrap">
+    <div class="signin-card">
+      <form id="f-email">
+        <label for="email">Admin email address</label>
+        <input type="email" id="email" autocomplete="email" required>
+        <button class="pill" type="submit">Send code</button>
+      </form>
+      <form id="f-code" hidden>
+        <label for="code">6-digit code from your email</label>
+        <input type="text" id="code" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123456" required>
+        <button class="pill" type="submit">Sign in</button><br>
+        <button class="alt" type="button" id="back">Use another email</button>
+      </form>
+      <div class="msg" id="login-msg"></div>
+    </div>
+  </div>
+</section>
+
+<section id="app" hidden style="border-top:0;padding-top:0;padding-bottom:80px">
+  <div class="wrap">
+    <div class="tabs" role="tablist">
+      <button data-tab="people" class="on">People</button>
+      <button data-tab="settings">Settings</button>
+      <button data-tab="scripts">Scripts</button>
+    </div>
+
+    <div class="banner" id="ks-banner" hidden>Kill switch is on: Monarch is paused for everyone.</div>
+
+    <div data-pane="people">
+      <p class="sub" id="summary"></p>
+      <form class="add card" id="f-add" style="margin-top:14px">
+        <input class="field" type="text" id="new-name" placeholder="Name" maxlength="80">
+        <input class="field" type="email" id="new-email" placeholder="Email address" required>
+        <label class="switch"><input type="checkbox" id="new-invite" checked>Email invite</label>
+        <button class="pill" type="submit">Add person</button>
+      </form>
+      <div class="msg" id="add-msg"></div>
+      <div class="people" id="people"></div>
+    </div>
+
+    <div data-pane="settings" hidden>
+      <div class="card settings">
+        <label class="switch"><input type="checkbox" id="ks"> Kill switch: pause Monarch for everyone (plugins lock, downloads stop)</label>
+        <div class="row">
+          <label for="notice" class="meta">Message shown in the app</label>
+          <input class="field" type="text" id="notice" maxlength="300" style="flex:1;min-width:220px" placeholder="e.g. Update paused while we fix an InDesign bug">
+        </div>
+        <div class="row">
+          <label for="minv" class="meta">Minimum Monarch app version</label>
+          <input class="field" type="text" id="minv" placeholder="0.0.0" style="width:120px">
+          <button class="btn" id="save-settings" type="button">Save settings</button>
+        </div>
+        <div class="msg" id="set-msg"></div>
+      </div>
+    </div>
+
+    <div data-pane="scripts" hidden>
+      <div class="drop" id="drop">
+        <b>Drop InDesign scripts here</b> or <button class="btn small" id="pick" type="button">Choose files…</button>
+        <input type="file" id="files" multiple hidden>
+        <div class="meta" style="margin-top:6px">Up to 700 KB each. A file with the same name replaces the stored one (its note and tags stay).</div>
+      </div>
+      <div class="sbar">
+        <input class="field" type="search" id="sq" placeholder="Search names, notes and tags">
+        <button class="btn" id="zip" type="button">Download all (.zip)</button>
+      </div>
+      <div class="msg" id="sc-msg"></div>
+      <div class="scripts" id="scripts"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Developed by Suna · <a href="about.html">About</a> · <a href="privacy.html">Privacy</a></span>
+    <span>© 2026 Monarch</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function () {
+  var API = "https://api.sunainverse.com/admin/api";
+  var $ = function (id) { return document.getElementById(id); };
+  var maxDevices = 2, myEmail = "", loginEmail = "", scripts = [];
+
+  function api(path, opts) {
+    opts = opts || {};
+    return fetch(API + path, {
+      method: opts.method || "GET",
+      headers: { "content-type": "application/json", "x-monarch": "1" },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      credentials: "include"
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error(d.message || "Something went wrong."); e.status = r.status; throw e; }
+        return d;
+      });
+    });
+  }
+  function say(el, t, err) { el.textContent = t || ""; el.className = "msg" + (err ? " err" : ""); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ago(t) {
+    var s = Math.floor(Date.now() / 1000) - t;
+    if (s < 90) return "just now";
+    if (s < 5400) return Math.round(s / 60) + " min ago";
+    if (s < 129600) return Math.round(s / 3600) + " h ago";
+    return Math.round(s / 86400) + " days ago";
+  }
+  function kb(n) { return n < 1024 ? n + " B" : (n / 1024).toFixed(n < 10240 ? 1 : 0) + " KB"; }
+
+  // ----- tabs -----
+  document.querySelectorAll(".tabs button").forEach(function (b) {
+    b.onclick = function () {
+      document.querySelectorAll(".tabs button").forEach(function (x) { x.classList.toggle("on", x === b); });
+      document.querySelectorAll("[data-pane]").forEach(function (p) { p.hidden = p.dataset.pane !== b.dataset.tab; });
+      try { localStorage.setItem("monarch-admin-tab", b.dataset.tab); } catch (e) {}
+    };
+  });
+  try { var t = localStorage.getItem("monarch-admin-tab"); var tb = t && document.querySelector('.tabs button[data-tab="' + t + '"]'); if (tb) tb.click(); } catch (e) {}
+
+  // ----- sign-in -----
+  $("f-email").onsubmit = function (e) {
+    e.preventDefault();
+    loginEmail = $("email").value.trim();
+    say($("login-msg"), "Sending…");
+    api("/login/start", { method: "POST", body: { email: loginEmail } }).then(function () {
+      $("f-email").hidden = true; $("f-code").hidden = false; $("code").focus();
+      say($("login-msg"), "If this email is an admin, a code is on its way.");
+    }).catch(function (err) { say($("login-msg"), err.message, true); });
+  };
+  $("f-code").onsubmit = function (e) {
+    e.preventDefault();
+    api("/login/verify", { method: "POST", body: { email: loginEmail, code: $("code").value.replace(/\D/g, "") } })
+      .then(function () { say($("login-msg"), ""); $("code").value = ""; boot(); })
+      .catch(function (err) { say($("login-msg"), err.message, true); });
+  };
+  $("back").onclick = function () { $("f-code").hidden = true; $("f-email").hidden = false; say($("login-msg"), ""); };
+  $("signout").onclick = function () { api("/logout", { method: "POST" }).then(function () { location.reload(); }); };
+
+  // ----- people -----
+  function loadPeople() {
+    return api("/users").then(function (d) {
+      var users = d.users, on = users.filter(function (u) { return u.active; }).length;
+      $("summary").textContent = users.length + (users.length === 1 ? " person, " : " people, ") + on + " switched on. Each person can use Monarch on up to " + maxDevices + " Macs.";
+      $("people").innerHTML = users.length ? users.map(function (u) {
+        return '<div class="person ' + (u.active ? "" : "off") + '"><span class="dot"></span><div>' +
+          '<div class="name">' + esc(u.name || u.email) + (u.role === "admin" ? '<span class="tag">Admin</span>' : "") + "</div>" +
+          '<div class="meta">' + esc(u.email) + " · " + u.macs.length + " of " + maxDevices + " Macs</div>" +
+          u.macs.map(function (m) {
+            return '<div class="mac">' + esc(m.name || "Mac") + " · last check-in " + ago(m.last_seen) +
+              ' <button class="btn small" data-signout="' + esc(m.id) + '">Sign out this Mac</button></div>';
+          }).join("") + "</div>" +
+          '<div class="btns">' + (u.email === myEmail ? "" :
+            '<button class="btn ' + (u.active ? "danger" : "") + '" data-toggle="' + u.id + '" data-active="' + u.active + '">' + (u.active ? "Switch off" : "Switch on") + "</button>" +
+            '<button class="btn danger" data-remove="' + u.id + '" data-name="' + esc(u.name || u.email) + '">Remove</button>') + "</div></div>";
+      }).join("") : '<p class="empty">Nobody added yet.</p>';
+    });
+  }
+  $("people").onclick = function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var p;
+    if (b.dataset.signout) p = api("/devices/" + b.dataset.signout + "/signout", { method: "POST" });
+    else if (b.dataset.toggle) p = api("/users/" + b.dataset.toggle, { method: "PATCH", body: { active: b.dataset.active !== "true" } });
+    else if (b.dataset.remove) {
+      if (!confirm("Remove " + b.dataset.name + "? Their Macs are signed out and their plugins lock at the next check.")) return;
+      p = api("/users/" + b.dataset.remove, { method: "DELETE" });
+    }
+    if (p) p.then(loadPeople).catch(function (err) { alert(err.message); });
+  };
+  $("f-add").onsubmit = function (e) {
+    e.preventDefault();
+    api("/users", { method: "POST", body: { name: $("new-name").value, email: $("new-email").value, invite: $("new-invite").checked } })
+      .then(function () {
+        say($("add-msg"), $("new-invite").checked ? "Added, and an invite email is on its way." : "Added.");
+        $("new-name").value = ""; $("new-email").value = "";
+        return loadPeople();
+      }).catch(function (err) { say($("add-msg"), err.message, true); });
+  };
+
+  // ----- settings -----
+  function loadSettings() {
+    return api("/settings").then(function (s) {
+      $("ks").checked = s.kill_switch; $("notice").value = s.notice; $("minv").value = s.min_app_version;
+      $("ks-banner").hidden = !s.kill_switch;
+    });
+  }
+  function saveSettings() {
+    api("/settings", { method: "PUT", body: { kill_switch: $("ks").checked, notice: $("notice").value, min_app_version: $("minv").value || "0.0.0" } })
+      .then(function () { say($("set-msg"), "Saved."); return loadSettings(); })
+      .catch(function (err) { say($("set-msg"), err.message, true); });
+  }
+  $("save-settings").onclick = saveSettings;
+  $("ks").onchange = saveSettings;
+
+  // ----- scripts -----
+  function loadScripts() {
+    return api("/scripts").then(function (d) { scripts = d.scripts; renderScripts(); });
+  }
+  function renderScripts() {
+    var q = $("sq").value.trim().toLowerCase();
+    var list = scripts.filter(function (s) { return !q || (s.name + " " + s.note + " " + s.tags).toLowerCase().indexOf(q) >= 0; });
+    $("scripts").innerHTML = list.length ? list.map(function (s) {
+      return '<div class="script" data-id="' + s.id + '"><div>' +
+        '<div class="sname">' + esc(s.name) + "</div>" +
+        '<div class="meta">' + kb(s.size) + " · updated " + ago(s.updated_at) + "</div>" +
+        (s.note ? '<div class="snote">' + esc(s.note) + "</div>" : "") +
+        (s.tags ? '<div class="stags">' + s.tags.split(",").map(function (t) { return "<span>" + esc(t.trim()) + "</span>"; }).join("") + "</div>" : "") +
+        '</div><div class="sbtns">' +
+        '<button class="btn small" data-act="dl">Download</button>' +
+        '<button class="btn small" data-act="edit">Edit note</button>' +
+        '<button class="btn small danger" data-act="del">Delete</button></div></div>';
+    }).join("") : '<p class="empty">' + (scripts.length ? "Nothing matches that search." : "No scripts yet. Drop some above.") + "</p>";
+    say($("sc-msg"), scripts.length ? scripts.length + (scripts.length === 1 ? " script" : " scripts") + " stored." : "");
+  }
+  $("sq").oninput = renderScripts;
+
+  function b64ToBlob(b64) {
+    var bin = atob(b64), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: "application/octet-stream" });
+  }
+  function save(blob, name) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+  function fileToB64(file) {
+    return file.arrayBuffer().then(function (buf) {
+      var bytes = new Uint8Array(buf), s = "";
+      for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      return btoa(s);
+    });
+  }
+
+  $("scripts").onclick = function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var card = b.closest(".script"), id = card.dataset.id;
+    var s = scripts.find(function (x) { return String(x.id) === id; });
+    if (b.dataset.act === "dl") {
+      api("/scripts/" + id).then(function (d) { save(b64ToBlob(d.content), d.name); }).catch(function (err) { alert(err.message); });
+    } else if (b.dataset.act === "del") {
+      if (!confirm("Delete " + s.name + "? This can't be undone.")) return;
+      api("/scripts/" + id, { method: "DELETE" }).then(loadScripts).catch(function (err) { alert(err.message); });
+    } else if (b.dataset.act === "edit") {
+      if (card.querySelector("textarea")) return;
+      var box = document.createElement("div");
+      box.innerHTML = '<textarea class="field" rows="3" placeholder="What does this script do?"></textarea>' +
+        '<input class="field" type="text" placeholder="Tags, separated by commas">' +
+        '<div style="margin-top:8px;display:flex;gap:8px"><button class="btn small" data-act="savenote">Save</button><button class="btn small" data-act="cancel">Cancel</button></div>';
+      box.querySelector("textarea").value = s.note; box.querySelector("input").value = s.tags;
+      card.firstElementChild.appendChild(box);
+      box.querySelector("textarea").focus();
+    } else if (b.dataset.act === "savenote") {
+      api("/scripts/" + id, { method: "PATCH", body: { note: card.querySelector("textarea").value, tags: card.querySelector("input").value } })
+        .then(loadScripts).catch(function (err) { alert(err.message); });
+    } else if (b.dataset.act === "cancel") {
+      renderScripts();
+    }
+  };
+
+  function upload(files) {
+    files = Array.prototype.slice.call(files);
+    if (!files.length) return;
+    var done = 0, failed = [];
+    say($("sc-msg"), "Uploading " + files.length + (files.length === 1 ? " file…" : " files…"));
+    return files.reduce(function (p, f) {
+      return p.then(function () {
+        if (f.size > 700 * 1024) { failed.push(f.name + " (larger than 700 KB)"); return; }
+        return fileToB64(f).then(function (b64) {
+          return api("/scripts", { method: "POST", body: { name: f.name, content: b64 } });
+        }).then(function () { done++; }).catch(function (err) { failed.push(f.name + " (" + err.message + ")"); });
+      });
+    }, Promise.resolve()).then(function () {
+      return loadScripts().then(function () {
+        say($("sc-msg"), "Uploaded " + done + " of " + files.length + "." + (failed.length ? " Not uploaded: " + failed.join(", ") : ""), failed.length > 0);
+      });
+    });
+  }
+  $("pick").onclick = function () { $("files").click(); };
+  $("files").onchange = function () { upload(this.files); this.value = ""; };
+  var drop = $("drop");
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { upload(e.dataTransfer.files); });
+
+  $("zip").onclick = function () {
+    if (typeof JSZip === "undefined") return alert("The zip tool didn't load. Check your connection and reload the page.");
+    say($("sc-msg"), "Making the zip…");
+    api("/scripts/all").then(function (d) {
+      var zip = new JSZip();
+      d.scripts.forEach(function (s) { zip.file(s.name, s.content, { base64: true }); });
+      return zip.generateAsync({ type: "blob" });
+    }).then(function (blob) {
+      var day = new Date().toISOString().slice(0, 10);
+      save(blob, "Monarch scripts " + day + ".zip");
+      renderScripts();
+    }).catch(function (err) { say($("sc-msg"), err.message, true); });
+  };
+
+  // ----- start -----
+  function boot() {
+    api("/me").then(function (me) {
+      myEmail = me.email; maxDevices = me.max_devices;
+      $("who-email").textContent = "Signed in as " + me.email;
+      $("who").hidden = false; $("signin").hidden = true; $("app").hidden = false;
+      return Promise.all([loadPeople(), loadSettings(), loadScripts()]);
+    }).catch(function (err) {
+      if (err.status === 401) { $("app").hidden = true; $("who").hidden = true; $("signin").hidden = false; }
+      else say($("login-msg"), err.message || "Can't reach the Monarch server right now.", true);
+      if (err.status !== 401) $("signin").hidden = false;
+    });
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

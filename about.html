@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Monarch</title>
+<meta name="description" content="Monarch is made by Suna, a designer and tinkerer with almost 20 years in print and digital production, who cut press preparation from a day to an hour.">
+<link rel="canonical" href="https://monarch.sunainverse.com/about.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Monarch">
+<meta property="og:title" content="About — Monarch">
+<meta property="og:description" content="Monarch is made by Suna, a designer and tinkerer with almost 20 years in print and digital production, who cut press preparation from a day to an hour.">
+<meta property="og:url" content="https://monarch.sunainverse.com/about.html">
+<meta property="og:image" content="https://monarch.sunainverse.com/assets/og-image.jpg?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Monarch: production at scale, without the busywork.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1b22; --panel:#2e2e2e; --row:#22232b;
+    --navy:#273597; --rule:#4a55a8; --blue:#2c4fbc;
+    --purple:#ac5ce6; --lilac:#dcbaf4;
+    --orange:#ffac01; --orange-dk:#6b4a00; --yellow:#ffe800; --red:#ff2a2a;
+    --text:#fff; --soft:#cfd0da; --muted:#8a8b96; --dot:#ffcc00;
+    --font:"Futura Std",Futura,"Jost","Century Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ---------- Monarch UI components ---------- */
+  .spark{width:1em;height:1em;flex:none;display:inline-block}
+
+  /* Purple pill — "DOMINATING" / "SUBJECT CLAUDE" / "Install" */
+  .pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:6px 20px;border-radius:99px;
+        background:#2a2a33;border:3px solid var(--purple);overflow:hidden;
+        font-weight:800;font-style:oblique;letter-spacing:.04em;white-space:nowrap}
+  .pill::before,.pill::after{content:"";position:absolute;top:-4px;bottom:-4px;width:9px;background:rgba(255,255,255,.22);transform:skewX(-30deg);pointer-events:none}
+  .pill::before{left:22%;box-shadow:13px 0 0 rgba(255,255,255,.22)} .pill::after{right:16%}
+  .pill.lg{font-size:1.25rem;padding:9px 28px;text-transform:uppercase}
+  .pill.sm{font-size:.82rem;padding:4px 16px;text-transform:uppercase}
+  a.pill,button.pill{transition:transform .15s,box-shadow .15s}
+  a.pill:hover,button.pill:hover{transform:translateY(-2px);box-shadow:0 0 0 4px rgba(172,92,230,.25)}
+
+  /* Orange status badge — "SERVING THE MONARCH" / "DOMINATED" */
+  .status{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 14px;border-radius:99px;
+          background:var(--bg);border:4px solid var(--orange);box-shadow:inset 0 0 0 3px var(--orange-dk);overflow:hidden;
+          font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);font-size:.82rem;transition:border-color .3s,color .3s,box-shadow .3s}
+  .status::before,.status::after{content:"";position:absolute;top:-4px;bottom:-4px;width:7px;background:rgba(255,255,255,.2);transform:skewX(-30deg)}
+  .status::before{left:13%;box-shadow:10px 0 0 rgba(255,255,255,.2)} .status::after{right:12%}
+  .status .spark{font-size:1.5em}
+  .status span{flex:1;text-align:center}
+  .status.off{border-color:var(--purple);box-shadow:none;color:#fff;font-weight:500;letter-spacing:.04em}
+  .status.off .spark{visibility:hidden}
+  .status.fail{border-color:var(--red);box-shadow:inset 0 0 0 3px #5a1010;color:var(--red);font-style:oblique;font-weight:800}
+
+  /* Navy action button — "Send Selection to AE" */
+  .act{display:block;width:100%;padding:9px 14px;border-radius:9px;background:var(--bg);border:3px solid var(--navy);
+       font-weight:700;text-align:center;transition:border-color .15s,background .15s}
+  .act:hover{border-color:var(--blue);background:#1f2130}
+  .act.on{border-color:var(--orange)}
+
+  /* Orange progress bar */
+  .prog{position:relative;height:30px;border-radius:99px;background:var(--bg);border:3px solid var(--orange-dk);overflow:hidden}
+  .prog .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--orange);border-radius:99px;transition:width .25s linear}
+  .prog .spark{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:18px;z-index:2}
+  .prog .spark{--sp-o:#fff;--sp-i:var(--orange)}
+  .prog .txt{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:.85rem;z-index:2}
+
+  .log{background:var(--bg);border-radius:4px;padding:12px 14px;color:var(--muted);font-size:.85rem;line-height:1.6;overflow-y:auto}
+  .log b{font-weight:500;color:var(--soft)}
+
+  /* App glyph — purple-rimmed Adobe tiles */
+  .glyph{display:grid;place-items:center;width:42px;height:42px;border-radius:7px;border:3px solid var(--purple);font-weight:700;font-size:1.05rem;flex:none}
+  .g-id{background:#49021f;color:#ff3366} .g-ai{background:#330000;color:#ff9a00}
+  .g-ps{background:#001e36;color:#31a8ff} .g-ae{background:#00005b;color:#9999ff} .g-cr{background:#14301e;color:#6ad892}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--dot);flex:none}
+  .dot.idle{background:#bdbdbd}
+
+  /* ---------- Layout ---------- */
+  nav{position:sticky;top:0;z-index:30;background:rgba(26,27,34,.92);backdrop-filter:blur(10px);border-bottom:2px solid var(--rule)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:18px}
+  .brand .ol{height:44px;width:auto}
+  .brand .wm{height:30px;width:auto}
+  .nav-r{display:flex;align-items:center;gap:22px}
+  .nav-links{display:flex;gap:24px;list-style:none;font-weight:500;color:var(--soft)}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-pill{display:flex;align-items:center;gap:8px}
+  .nav-pill .spark{font-size:22px}
+
+  header{position:relative;padding:72px 0 96px;overflow:hidden}
+  .ghost{position:absolute;right:-60px;bottom:-80px;width:620px;opacity:.07;pointer-events:none}
+  .hero{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero-tag{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+  .hero-tag small{color:var(--muted);font-size:.95rem}
+  h1{font-size:clamp(2.5rem,5.6vw,4.4rem);line-height:1.04;font-weight:700;margin-bottom:22px}
+  h1 em{font-style:oblique;font-weight:800;color:var(--orange)}
+  .lead{color:var(--soft);font-size:1.15rem;max-width:520px;margin-bottom:34px}
+  .btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btns .act{width:auto;padding:10px 26px}
+  .hero-art{position:relative;max-width:420px;justify-self:end;width:100%}
+  .hero-art .mark{width:100%;height:auto;filter:drop-shadow(0 24px 50px rgba(44,79,188,.55))}
+  .hero-art .spark{position:absolute;animation:tw 3s ease-in-out infinite}
+  .hero-art .s1{top:-6%;right:6%;font-size:46px}
+  .hero-art .s2{bottom:4%;left:-4%;font-size:30px;animation-delay:1s}
+  .hero-art .s3{top:40%;right:-5%;font-size:22px;animation-delay:2s}
+  @keyframes tw{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.55) rotate(25deg)}}
+
+  section{padding:88px 0;border-top:2px solid var(--rule)}
+  .head{margin-bottom:40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);font-size:.85rem}
+  .eyebrow .spark{font-size:18px}
+  h2{font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.12;font-weight:700;margin:12px 0 10px}
+  .sub{color:var(--soft);max-width:620px}
+
+  /* Plugin rows (dashboard) */
+  .rows{border-top:2px solid var(--rule)}
+  .prow{display:flex;align-items:center;gap:18px;padding:18px 4px;border-bottom:2px solid var(--rule)}
+  .prow .meta{flex:1;min-width:0}
+  .prow .meta h3{font-weight:500;font-size:1.15rem}
+  .prow .meta p{color:var(--muted);font-size:.95rem}
+  .prow .pill{min-width:132px}
+
+  /* Live panel demo */
+  .demo{display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:start}
+  .panel{background:var(--panel);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+  .panel .log{height:150px;margin-top:6px}
+  .panel .prog{display:none}
+  .panel .prog.show{display:block}
+  .demo-copy .sub{margin-bottom:24px}
+  .tool-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .tool{padding:18px;border-radius:9px;background:var(--row);border:3px solid var(--navy);transition:border-color .2s}
+  .tool:hover,.tool.on{border-color:var(--orange)}
+  .tool h3{font-weight:700;font-size:1.02rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .tool h3 .spark{font-size:16px}
+  .tool p{color:var(--soft);font-size:.92rem}
+  .tool small{display:block;margin-top:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.06em;font-size:.7rem;color:var(--purple)}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;counter-reset:s}
+  .step{counter-increment:s;background:var(--panel);border-radius:6px;padding:22px}
+  .step::before{content:"0" counter(s);display:block;font-size:2.4rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1;margin-bottom:12px}
+  .step h3{font-weight:700;margin-bottom:6px}
+  .step p{color:var(--soft);font-size:.95rem}
+
+  /* Coming soon — loading state */
+  .cta{text-align:center}
+  .loading{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 auto 26px}
+  .compass{width:64px;height:64px;animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading em{color:var(--soft);font-style:oblique}
+  .cta .sub{margin:0 auto 30px}
+  .dl-meta{margin-top:14px;color:var(--soft);font-size:.9rem}
+  .dl-steps{max-width:560px;margin:28px auto 0;text-align:left;color:var(--soft);line-height:1.55;padding-left:1.4em}
+  .dl-steps li{margin-bottom:10px}
+  .dl-steps b{color:var(--text,#fff)}
+
+  footer{border-top:2px solid var(--rule);padding:16px 0 22px;color:var(--muted);font-weight:700;font-size:.9rem}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media (max-width:900px){
+    .hero,.demo{grid-template-columns:1fr}
+    .hero-art{max-width:360px;justify-self:center;margin-top:10px}
+    .panel{max-width:360px}
+    .nav-links{display:none}
+  }
+  @media (max-width:520px){
+    .brand .ol{display:none}
+    .brand .wm{height:24px}
+    .nav-pill .spark{display:none}
+    .prow{display:grid;grid-template-columns:auto auto 1fr;column-gap:14px;row-gap:10px}
+    .prow .pill{grid-column:3;justify-self:start;min-width:0}
+    .pill.lg{font-size:1.05rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---------- About page ---------- */
+  .nav-links a[aria-current]{color:var(--orange)}
+  .about{padding:80px 0 88px;border-top:0}
+  .about .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+  .about h1{font-size:clamp(2.4rem,6vw,3.8rem);line-height:1.05;font-weight:800;font-style:oblique;margin:14px 0 8px}
+  .about .lead{font-size:1.25rem;color:var(--lilac);font-weight:500;margin-bottom:26px}
+  .about .story p{color:var(--soft);font-size:1.08rem;max-width:600px;margin-bottom:16px}
+  .about .story p strong{color:var(--text);font-weight:700}
+  .about-art{position:relative;justify-self:center;max-width:380px;width:100%}
+  .about-art .mark{width:100%;height:auto;aspect-ratio:900/771;filter:drop-shadow(0 0 40px rgba(172,92,230,.35))}
+  .about-art .spark{position:absolute}
+  .about-art .s1{font-size:34px;top:4%;left:2%}
+  .about-art .s2{font-size:22px;bottom:10%;right:4%}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .fact{background:var(--panel);border-radius:6px;padding:22px}
+  .fact b{display:block;font-size:2rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1.1;margin-bottom:6px}
+  .fact span{color:var(--soft);font-size:.95rem}
+  .about-badge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%)}
+  .fav-card{background:var(--row);border:3px solid var(--purple);border-radius:10px;padding:34px 32px;max-width:760px}
+  .fav-card .sub{max-width:none}
+  .contact{text-align:center}
+  .contact .sub{margin:0 auto 28px}
+  .contact .mail{display:block;margin-top:14px;color:var(--soft);font-weight:500}
+  .contact .mail:hover{color:var(--orange)}
+  @media (max-width:900px){
+    .about .wrap{grid-template-columns:1fr;gap:28px}
+    .about-art{max-width:260px;grid-row:1}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sp" viewBox="0 0 24 24">
+    <path style="fill:var(--sp-o,#ffac01)" d="M12 0c.5 6 1.6 9.2 3 10.2 1.3 1 4.6 1.5 9 1.8-4.4.3-7.7.8-9 1.8-1.4 1-2.5 4.2-3 10.2-.5-6-1.6-9.2-3-10.2-1.3-1-4.6-1.5-9-1.8 4.4-.3 7.7-.8 9-1.8C10.4 9.2 11.5 6 12 0z"/>
+    <path style="fill:var(--sp-i,#fff)" d="M12 6.5c.3 3 .8 4.4 1.5 4.9.6.4 1.9.5 3.5.6-1.6.1-2.9.2-3.5.6-.7.5-1.2 1.9-1.5 4.9-.3-3-.8-4.4-1.5-4.9-.6-.4-1.9-.5-3.5-.6 1.6-.1 2.9-.2 3.5-.6.7-.5 1.2-1.9 1.5-4.9z"/>
+  </symbol>
+</svg>
+
+<nav>
+  <div class="wrap">
+    <a href="index.html" class="brand" aria-label="Monarch home">
+      <img class="ol" src="assets/logo-outline.webp" alt="" width="197" height="170">
+      <img class="wm" src="assets/wordmark.webp" alt="Monarch" width="614" height="152">
+    </a>
+    <div class="nav-r">
+      <ul class="nav-links">
+        <li><a href="index.html#suite">Suite</a></li>
+        <li><a href="index.html#panel">Tools</a></li>
+        <li><a href="index.html#how">How it works</a></li>
+        <li><a href="index.html#download">Download</a></li>
+        <li><a href="guide.html">Guide</a></li>
+        <li><a href="about.html" aria-current="page">About</a></li>
+      </ul>
+      <div class="nav-pill">
+        <svg class="spark"><use href="#sp"/></svg>
+        <span class="pill sm">Dominating</span>
+        <svg class="spark"><use href="#sp"/></svg>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section class="about">
+  <div class="wrap">
+    <div class="story">
+      <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>About</span>
+      <h1>Hi, I'm Suna.</h1>
+      <p class="lead">Designer and tinkerer from the Netherlands. Dominating the busywork since forever.</p>
+      <p>For <strong>almost 20 years</strong> I've worked in print and digital production: campaign publications, in-store print and screens, often in dozens of versions at once.</p>
+      <p>I've always tinkered on the side. Every repetitive job got its own little shortcut, until the shortcuts started talking to each other. <strong>Monarch is what happened next:</strong> a plugin for each Adobe app, and a bridge that lets them hand work to each other.</p>
+      <p>The names come from a lifelong love of games: every good game needs a ruler, and here the Monarch rules the batch work.</p>
+    </div>
+    <div class="about-art" aria-hidden="true">
+      <img class="mark" src="assets/mark.webp" alt="" width="900" height="771">
+      <svg class="spark s1"><use href="#sp"/></svg>
+      <svg class="spark s2"><use href="#sp"/></svg>
+      <span class="pill sm about-badge">Dominating</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="facts">
+      <div class="fact"><b>~20 years</b><span>in print and digital production</span></div>
+      <div class="fact"><b>1 day → 1 hour</b><span>preparing files for press, with Monarch</span></div>
+      <div class="fact"><b>The Netherlands</b><span>home base</span></div>
+      <div class="fact"><b>Always tinkering</b><span>every tool starts from a real production job</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="fav">
+  <div class="wrap">
+    <div class="fav-card">
+      <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>My favourite</span>
+      <h2>Subject Claude</h2>
+      <p class="sub">Monarch's Claude connection lets Claude direct the Adobe apps through the bridge. Ask for a change and watch InDesign, Illustrator, Photoshop or After Effects carry it out. It's my favourite way to work with Monarch.</p>
+    </div>
+  </div>
+</section>
+
+<section class="next">
+  <div class="wrap">
+    <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>What's next</span>
+    <h2>The suite keeps growing</h2>
+    <p class="sub">New tools join Monarch as production throws up new chores. For now it's shared by invitation; one day it will open up to more people.</p>
+  </div>
+</section>
+
+<section class="contact">
+  <div class="wrap">
+    <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Get in touch</span>
+    <h2>Questions, ideas or want access?</h2>
+    <p class="sub">Send me a message. I read everything myself.</p>
+    <a href="mailto:hello@sunainverse.com" class="pill lg"><svg class="spark"><use href="#sp"/></svg>Say hello</a>
+    <a href="mailto:hello@sunainverse.com" class="mail">hello@sunainverse.com</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Developed by Suna · <a href="about.html">About</a> · <a href="privacy.html">Privacy</a></span>
+    <span>© 2026 Monarch</span>
+  </div>
+</footer>
+</body>
+</html>

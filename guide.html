@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools guide — Monarch</title>
+<meta name="description" content="The Monarch tools guide for members: what every tool does, step by step.">
+<link rel="canonical" href="https://monarch.sunainverse.com/guide.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Monarch">
+<meta property="og:title" content="Tools guide — Monarch">
+<meta property="og:description" content="The Monarch tools guide for members: what every tool does, step by step.">
+<meta property="og:url" content="https://monarch.sunainverse.com/guide.html">
+<meta property="og:image" content="https://monarch.sunainverse.com/assets/og-image.jpg?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Monarch: production at scale, without the busywork.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1b22; --panel:#2e2e2e; --row:#22232b;
+    --navy:#273597; --rule:#4a55a8; --blue:#2c4fbc;
+    --purple:#ac5ce6; --lilac:#dcbaf4;
+    --orange:#ffac01; --orange-dk:#6b4a00; --yellow:#ffe800; --red:#ff2a2a;
+    --text:#fff; --soft:#cfd0da; --muted:#8a8b96; --dot:#ffcc00;
+    --font:"Futura Std",Futura,"Jost","Century Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ---------- Monarch UI components ---------- */
+  .spark{width:1em;height:1em;flex:none;display:inline-block}
+
+  /* Purple pill — "DOMINATING" / "SUBJECT CLAUDE" / "Install" */
+  .pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:6px 20px;border-radius:99px;
+        background:#2a2a33;border:3px solid var(--purple);overflow:hidden;
+        font-weight:800;font-style:oblique;letter-spacing:.04em;white-space:nowrap}
+  .pill::before,.pill::after{content:"";position:absolute;top:-4px;bottom:-4px;width:9px;background:rgba(255,255,255,.22);transform:skewX(-30deg);pointer-events:none}
+  .pill::before{left:22%;box-shadow:13px 0 0 rgba(255,255,255,.22)} .pill::after{right:16%}
+  .pill.lg{font-size:1.25rem;padding:9px 28px;text-transform:uppercase}
+  .pill.sm{font-size:.82rem;padding:4px 16px;text-transform:uppercase}
+  a.pill,button.pill{transition:transform .15s,box-shadow .15s}
+  a.pill:hover,button.pill:hover{transform:translateY(-2px);box-shadow:0 0 0 4px rgba(172,92,230,.25)}
+
+  /* Orange status badge — "SERVING THE MONARCH" / "DOMINATED" */
+  .status{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 14px;border-radius:99px;
+          background:var(--bg);border:4px solid var(--orange);box-shadow:inset 0 0 0 3px var(--orange-dk);overflow:hidden;
+          font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);font-size:.82rem;transition:border-color .3s,color .3s,box-shadow .3s}
+  .status::before,.status::after{content:"";position:absolute;top:-4px;bottom:-4px;width:7px;background:rgba(255,255,255,.2);transform:skewX(-30deg)}
+  .status::before{left:13%;box-shadow:10px 0 0 rgba(255,255,255,.2)} .status::after{right:12%}
+  .status .spark{font-size:1.5em}
+  .status span{flex:1;text-align:center}
+  .status.off{border-color:var(--purple);box-shadow:none;color:#fff;font-weight:500;letter-spacing:.04em}
+  .status.off .spark{visibility:hidden}
+  .status.fail{border-color:var(--red);box-shadow:inset 0 0 0 3px #5a1010;color:var(--red);font-style:oblique;font-weight:800}
+
+  /* Navy action button — "Send Selection to AE" */
+  .act{display:block;width:100%;padding:9px 14px;border-radius:9px;background:var(--bg);border:3px solid var(--navy);
+       font-weight:700;text-align:center;transition:border-color .15s,background .15s}
+  .act:hover{border-color:var(--blue);background:#1f2130}
+  .act.on{border-color:var(--orange)}
+
+  /* Orange progress bar */
+  .prog{position:relative;height:30px;border-radius:99px;background:var(--bg);border:3px solid var(--orange-dk);overflow:hidden}
+  .prog .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--orange);border-radius:99px;transition:width .25s linear}
+  .prog .spark{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:18px;z-index:2}
+  .prog .spark{--sp-o:#fff;--sp-i:var(--orange)}
+  .prog .txt{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:.85rem;z-index:2}
+
+  .log{background:var(--bg);border-radius:4px;padding:12px 14px;color:var(--muted);font-size:.85rem;line-height:1.6;overflow-y:auto}
+  .log b{font-weight:500;color:var(--soft)}
+
+  /* App glyph — purple-rimmed Adobe tiles */
+  .glyph{display:grid;place-items:center;width:42px;height:42px;border-radius:7px;border:3px solid var(--purple);font-weight:700;font-size:1.05rem;flex:none}
+  .g-id{background:#49021f;color:#ff3366} .g-ai{background:#330000;color:#ff9a00}
+  .g-ps{background:#001e36;color:#31a8ff} .g-ae{background:#00005b;color:#9999ff} .g-cr{background:#14301e;color:#6ad892}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--dot);flex:none}
+  .dot.idle{background:#bdbdbd}
+
+  /* ---------- Layout ---------- */
+  nav{position:sticky;top:0;z-index:30;background:rgba(26,27,34,.92);backdrop-filter:blur(10px);border-bottom:2px solid var(--rule)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:18px}
+  .brand .ol{height:44px;width:auto}
+  .brand .wm{height:30px;width:auto}
+  .nav-r{display:flex;align-items:center;gap:22px}
+  .nav-links{display:flex;gap:24px;list-style:none;font-weight:500;color:var(--soft)}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-pill{display:flex;align-items:center;gap:8px}
+  .nav-pill .spark{font-size:22px}
+
+  header{position:relative;padding:72px 0 96px;overflow:hidden}
+  .ghost{position:absolute;right:-60px;bottom:-80px;width:620px;opacity:.07;pointer-events:none}
+  .hero{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero-tag{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+  .hero-tag small{color:var(--muted);font-size:.95rem}
+  h1{font-size:clamp(2.5rem,5.6vw,4.4rem);line-height:1.04;font-weight:700;margin-bottom:22px}
+  h1 em{font-style:oblique;font-weight:800;color:var(--orange)}
+  .lead{color:var(--soft);font-size:1.15rem;max-width:520px;margin-bottom:34px}
+  .btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btns .act{width:auto;padding:10px 26px}
+  .hero-art{position:relative;max-width:420px;justify-self:end;width:100%}
+  .hero-art .mark{width:100%;height:auto;filter:drop-shadow(0 24px 50px rgba(44,79,188,.55))}
+  .hero-art .spark{position:absolute;animation:tw 3s ease-in-out infinite}
+  .hero-art .s1{top:-6%;right:6%;font-size:46px}
+  .hero-art .s2{bottom:4%;left:-4%;font-size:30px;animation-delay:1s}
+  .hero-art .s3{top:40%;right:-5%;font-size:22px;animation-delay:2s}
+  @keyframes tw{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.55) rotate(25deg)}}
+
+  section{padding:88px 0;border-top:2px solid var(--rule)}
+  .head{margin-bottom:40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);font-size:.85rem}
+  .eyebrow .spark{font-size:18px}
+  h2{font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.12;font-weight:700;margin:12px 0 10px}
+  .sub{color:var(--soft);max-width:620px}
+
+  /* Plugin rows (dashboard) */
+  .rows{border-top:2px solid var(--rule)}
+  .prow{display:flex;align-items:center;gap:18px;padding:18px 4px;border-bottom:2px solid var(--rule)}
+  .prow .meta{flex:1;min-width:0}
+  .prow .meta h3{font-weight:500;font-size:1.15rem}
+  .prow .meta p{color:var(--muted);font-size:.95rem}
+  .prow .pill{min-width:132px}
+
+  /* Live panel demo */
+  .demo{display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:start}
+  .panel{background:var(--panel);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+  .panel .log{height:150px;margin-top:6px}
+  .panel .prog{display:none}
+  .panel .prog.show{display:block}
+  .demo-copy .sub{margin-bottom:24px}
+  .tool-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .tool{padding:18px;border-radius:9px;background:var(--row);border:3px solid var(--navy);transition:border-color .2s}
+  .tool:hover,.tool.on{border-color:var(--orange)}
+  .tool h3{font-weight:700;font-size:1.02rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .tool h3 .spark{font-size:16px}
+  .tool p{color:var(--soft);font-size:.92rem}
+  .tool small{display:block;margin-top:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.06em;font-size:.7rem;color:var(--purple)}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;counter-reset:s}
+  .step{counter-increment:s;background:var(--panel);border-radius:6px;padding:22px}
+  .step::before{content:"0" counter(s);display:block;font-size:2.4rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1;margin-bottom:12px}
+  .step h3{font-weight:700;margin-bottom:6px}
+  .step p{color:var(--soft);font-size:.95rem}
+
+  /* Coming soon — loading state */
+  .cta{text-align:center}
+  .loading{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 auto 26px}
+  .compass{width:64px;height:64px;animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading em{color:var(--soft);font-style:oblique}
+  .cta .sub{margin:0 auto 30px}
+  .dl-meta{margin-top:14px;color:var(--soft);font-size:.9rem}
+  .dl-steps{max-width:560px;margin:28px auto 0;text-align:left;color:var(--soft);line-height:1.55;padding-left:1.4em}
+  .dl-steps li{margin-bottom:10px}
+  .dl-steps b{color:var(--text,#fff)}
+
+  footer{border-top:2px solid var(--rule);padding:16px 0 22px;color:var(--muted);font-weight:700;font-size:.9rem}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media (max-width:900px){
+    .hero,.demo{grid-template-columns:1fr}
+    .hero-art{max-width:360px;justify-self:center;margin-top:10px}
+    .panel{max-width:360px}
+    .nav-links{display:none}
+  }
+  @media (max-width:520px){
+    .brand .ol{display:none}
+    .brand .wm{height:24px}
+    .nav-pill .spark{display:none}
+    .prow{display:grid;grid-template-columns:auto auto 1fr;column-gap:14px;row-gap:10px}
+    .prow .pill{grid-column:3;justify-self:start;min-width:0}
+    .pill.lg{font-size:1.05rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---------- About page ---------- */
+  .nav-links a[aria-current]{color:var(--orange)}
+  .about{padding:80px 0 88px;border-top:0}
+  .about .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+  .about h1{font-size:clamp(2.4rem,6vw,3.8rem);line-height:1.05;font-weight:800;font-style:oblique;margin:14px 0 8px}
+  .about .lead{font-size:1.25rem;color:var(--lilac);font-weight:500;margin-bottom:26px}
+  .about .story p{color:var(--soft);font-size:1.08rem;max-width:600px;margin-bottom:16px}
+  .about .story p strong{color:var(--text);font-weight:700}
+  .about-art{position:relative;justify-self:center;max-width:380px;width:100%}
+  .about-art .mark{width:100%;height:auto;aspect-ratio:900/771;filter:drop-shadow(0 0 40px rgba(172,92,230,.35))}
+  .about-art .spark{position:absolute}
+  .about-art .s1{font-size:34px;top:4%;left:2%}
+  .about-art .s2{font-size:22px;bottom:10%;right:4%}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .fact{background:var(--panel);border-radius:6px;padding:22px}
+  .fact b{display:block;font-size:2rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1.1;margin-bottom:6px}
+  .fact span{color:var(--soft);font-size:.95rem}
+  .about-badge{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%)}
+  .fav-card{background:var(--row);border:3px solid var(--purple);border-radius:10px;padding:34px 32px;max-width:760px}
+  .fav-card .sub{max-width:none}
+  .contact{text-align:center}
+  .contact .sub{margin:0 auto 28px}
+  .contact .mail{display:block;margin-top:14px;color:var(--soft);font-weight:500}
+  .contact .mail:hover{color:var(--orange)}
+  @media (max-width:900px){
+    .about .wrap{grid-template-columns:1fr;gap:28px}
+    .about-art{max-width:260px;grid-row:1}
+  }
+
+  /* ---------- Tools guide (members only) ---------- */
+  [hidden]{display:none!important}
+  .g-head{padding:64px 0 28px;border-top:0}
+  .g-head h1{font-size:clamp(2.2rem,5.5vw,3.4rem);line-height:1.05;font-weight:800;font-style:oblique;margin:14px 0 8px}
+  .g-head .sub{max-width:640px}
+  .g-who{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:16px;color:var(--soft);font-size:.95rem}
+  .g-who button{background:none;border:0;color:var(--lilac);text-decoration:underline;padding:0;font-size:.95rem}
+  .signin-card{max-width:440px;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:28px}
+  .signin-card label{display:block;font-weight:700;margin:0 0 8px}
+  .signin-card input{width:100%;font:inherit;font-size:1.05rem;padding:11px 14px;border-radius:8px;border:2px solid var(--rule);background:var(--bg);color:var(--text);margin-bottom:14px}
+  .signin-card input:focus{outline:none;border-color:var(--yellow)}
+  .signin-card .code{letter-spacing:.35em;font-size:1.3rem}
+  .signin-card .msg{min-height:1.4em;color:var(--soft);font-size:.92rem;margin-top:12px}
+  .signin-card .msg.err{color:#ff8a8a}
+  .signin-card .alt{background:none;border:0;color:var(--lilac);text-decoration:underline;padding:0;margin-top:10px;font-size:.9rem}
+  .signin-card .pill{border:3px solid var(--purple);cursor:pointer}
+  .g-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:36px;align-items:start;padding-top:8px;padding-bottom:80px}
+  .g-toc{position:sticky;top:92px;max-height:calc(100vh - 110px);overflow:auto;padding-right:6px}
+  .g-toc input{width:100%;font:inherit;padding:9px 12px;border-radius:8px;border:2px solid var(--rule);background:var(--row);color:var(--text);margin-bottom:16px}
+  .g-toc input:focus{outline:none;border-color:var(--yellow)}
+  .g-toc .grp{font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.06em;font-size:.78rem;color:var(--yellow);margin:16px 0 6px}
+  .g-toc a{display:block;padding:5px 10px;border-radius:6px;color:var(--soft);font-size:.95rem}
+  .g-toc a:hover,.g-toc a.on{background:var(--row);color:var(--text)}
+  .g-doc h1.grp-title{font-size:1.6rem;font-weight:800;font-style:oblique;color:var(--orange);margin:38px 0 14px}
+  .g-doc h1.grp-title:first-child{margin-top:0}
+  .g-doc{min-width:0}
+  .tool-doc{overflow-wrap:anywhere;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:26px 28px;margin-bottom:22px;scroll-margin-top:90px}
+  .tool-doc h2{font-size:1.55rem;font-weight:700;margin-bottom:4px}
+  .tool-doc .meta{color:var(--lilac);font-size:.92rem;margin-bottom:14px}
+  .tool-doc h3{font-size:.85rem;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);margin:22px 0 8px}
+  .tool-doc p{color:var(--soft);margin-bottom:10px}
+  .tool-doc ul,.tool-doc ol{color:var(--soft);padding-left:1.3em;margin-bottom:10px}
+  .tool-doc li{margin-bottom:6px}
+  .tool-doc li ul,.tool-doc li ol{margin:6px 0 0}
+  .tool-doc strong{color:var(--text)}
+  .tool-doc code{background:var(--bg);padding:1px 6px;border-radius:4px;font-size:.9em}
+  .g-empty{color:var(--soft)}
+  #tocbox summary{display:none}
+  @media (max-width:900px){
+    #tocbox summary{display:block;cursor:pointer;font-weight:700;padding:10px 14px;border:2px solid var(--rule);border-radius:8px;background:var(--row)}
+    #tocbox[open] summary{margin-bottom:6px}
+  }
+  @media (max-width:900px){
+    .g-layout{grid-template-columns:1fr;gap:18px}
+    .g-toc{position:static;max-height:none}
+    .tool-doc{padding:20px}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sp" viewBox="0 0 24 24">
+    <path style="fill:var(--sp-o,#ffac01)" d="M12 0c.5 6 1.6 9.2 3 10.2 1.3 1 4.6 1.5 9 1.8-4.4.3-7.7.8-9 1.8-1.4 1-2.5 4.2-3 10.2-.5-6-1.6-9.2-3-10.2-1.3-1-4.6-1.5-9-1.8 4.4-.3 7.7-.8 9-1.8C10.4 9.2 11.5 6 12 0z"/>
+    <path style="fill:var(--sp-i,#fff)" d="M12 6.5c.3 3 .8 4.4 1.5 4.9.6.4 1.9.5 3.5.6-1.6.1-2.9.2-3.5.6-.7.5-1.2 1.9-1.5 4.9-.3-3-.8-4.4-1.5-4.9-.6-.4-1.9-.5-3.5-.6 1.6-.1 2.9-.2 3.5-.6.7-.5 1.2-1.9 1.5-4.9z"/>
+  </symbol>
+</svg>
+
+<nav>
+  <div class="wrap">
+    <a href="index.html" class="brand" aria-label="Monarch home">
+      <img class="ol" src="assets/logo-outline.webp" alt="" width="197" height="170">
+      <img class="wm" src="assets/wordmark.webp" alt="Monarch" width="614" height="152">
+    </a>
+    <div class="nav-r">
+      <ul class="nav-links">
+        <li><a href="index.html#suite">Suite</a></li>
+        <li><a href="index.html#panel">Tools</a></li>
+        <li><a href="index.html#how">How it works</a></li>
+        <li><a href="index.html#download">Download</a></li>
+        <li><a href="guide.html" aria-current="page">Guide</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav-pill">
+        <svg class="spark"><use href="#sp"/></svg>
+        <span class="pill sm">Dominating</span>
+        <svg class="spark"><use href="#sp"/></svg>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section class="g-head">
+  <div class="wrap">
+    <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Members only</span>
+    <h1>Tools guide</h1>
+    <p class="sub">What every Monarch tool does, when to use it and how, step by step. Sign in with the email address your invite went to.</p>
+    <div class="g-who" id="who" hidden><span id="who-email"></span><button id="signout">Sign out</button></div>
+  </div>
+</section>
+
+<section class="g-sign" id="signin" hidden style="border-top:0;padding-top:0">
+  <div class="wrap">
+    <div class="signin-card">
+      <form id="f-email">
+        <label for="email">Email address</label>
+        <input type="email" id="email" autocomplete="email" placeholder="name@example.com" required>
+        <button class="pill" type="submit">Send code</button>
+      </form>
+      <form id="f-code" hidden>
+        <label for="code">6-digit code from your email</label>
+        <input type="text" id="code" class="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123456" required>
+        <button class="pill" type="submit">Sign in</button><br>
+        <button class="alt" type="button" id="back">Use another email</button>
+      </form>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+</section>
+
+<section id="guide" hidden style="border-top:0;padding-top:0">
+  <div class="wrap g-layout">
+    <aside class="g-toc">
+      <input type="search" id="q" placeholder="Search the guide" aria-label="Search the guide">
+      <details id="tocbox" open><summary>All tools</summary><nav id="toc" aria-label="Tools"></nav></details>
+    </aside>
+    <article class="g-doc" id="doc"></article>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Developed by Suna · <a href="about.html">About</a> · <a href="privacy.html">Privacy</a></span>
+    <span>© 2026 Monarch</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var API = "https://api.sunainverse.com/v1/web";
+  var $ = function (id) { return document.getElementById(id); };
+  var email = "";
+
+  function call(path, data) {
+    var opt = { credentials: "include", headers: {} };
+    if (data) {
+      opt.method = "POST";
+      opt.headers["content-type"] = "application/json";
+      opt.headers["x-monarch"] = "1";
+      opt.body = JSON.stringify(data);
+    }
+    return fetch(API + path, opt).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (b) { b._status = r.status; return b; });
+    });
+  }
+  function msg(t, err) { $("msg").textContent = t || ""; $("msg").className = "msg" + (err ? " err" : ""); }
+
+  // --- small, safe Markdown renderer (headings, lists, bold, italic, code) ---
+  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function inline(t) {
+    t = esc(t);
+    t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+    t = t.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    t = t.replace(/([\w.+-]+@[\w-]+\.[\w.]+)/g, '<a href="mailto:$1">$1</a>');
+    return t;
+  }
+  function slug(t) { return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+
+  function render(md) {
+    var lines = md.replace(/\r/g, "").split("\n");
+    var out = [], toc = [], para = [], stack = [], inTool = false;
+    function flushPara() { if (para.length) { out.push("<p>" + inline(para.join(" ")) + "</p>"); para = []; } }
+    function closeLists(level) {
+      while (stack.length > level) { var l = stack.pop(); out.push("</li></" + l.type + ">"); }
+    }
+    function closeTool() { flushPara(); closeLists(0); if (inTool) { out.push("</section>"); inTool = false; } }
+    lines.forEach(function (raw) {
+      var line = raw.replace(/\s+$/, "");
+      var m;
+      if (!line.trim()) { flushPara(); return; }
+      if ((m = /^# (.+)/.exec(line))) {
+        closeTool();
+        var gid = "g-" + slug(m[1]);
+        toc.push({ group: m[1], id: gid });
+        out.push('<h1 class="grp-title" id="' + gid + '">' + inline(m[1]) + "</h1>");
+        return;
+      }
+      if ((m = /^## (.+)/.exec(line))) {
+        closeTool();
+        var id = slug(m[1]);
+        toc.push({ tool: m[1], id: id });
+        out.push('<section class="tool-doc" id="' + id + '"><h2>' + inline(m[1]) + "</h2>");
+        inTool = true;
+        return;
+      }
+      if ((m = /^### (.+)/.exec(line))) { flushPara(); closeLists(0); out.push("<h3>" + inline(m[1]) + "</h3>"); return; }
+      if ((m = /^\*([^*].*)\*$/.exec(line)) && /App:/.test(line)) { flushPara(); out.push('<div class="meta">' + inline(m[1]) + "</div>"); return; }
+      if ((m = /^(\s*)([-*]|\d+\.)\s+(.*)/.exec(line))) {
+        flushPara();
+        var level = Math.floor(m[1].length / 2) + 1;
+        var type = /\d/.test(m[2]) ? "ol" : "ul";
+        if (level > stack.length + 1) level = stack.length + 1;
+        if (stack.length >= level && stack[level - 1].type !== type) closeLists(level - 1);
+        if (stack.length < level) { out.push("<" + type + "><li>"); stack.push({ type: type }); }
+        else { closeLists(level); out.push("</li><li>"); }
+        out.push(inline(m[3]));
+        return;
+      }
+      if (stack.length && /^\s+/.test(raw)) { out.push(" " + inline(line.trim())); return; }
+      closeLists(0);
+      para.push(line.trim());
+    });
+    closeTool();
+    $("doc").innerHTML = out.join("");
+    var t = "";
+    toc.forEach(function (e) {
+      if (e.group) t += '<div class="grp">' + esc(e.group) + "</div>";
+      else t += '<a href="#' + e.id + '" data-id="' + e.id + '">' + esc(e.tool) + "</a>";
+    });
+    $("toc").innerHTML = t;
+    if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
+  }
+
+  // Phones: the tool list starts folded so the guide itself is near the top.
+  if (window.matchMedia("(max-width:900px)").matches) $("tocbox").open = false;
+  document.addEventListener("click", function (e) {
+    if (e.target.closest && e.target.closest("#toc a") && window.matchMedia("(max-width:900px)").matches) $("tocbox").open = false;
+  });
+
+  $("q").addEventListener("input", function () {
+    var q = this.value.trim().toLowerCase();
+    var any = false;
+    document.querySelectorAll(".tool-doc").forEach(function (s) {
+      var hit = !q || s.textContent.toLowerCase().indexOf(q) >= 0;
+      s.hidden = !hit; if (hit) any = true;
+      var a = document.querySelector('.g-toc a[data-id="' + s.id + '"]');
+      if (a) a.hidden = !hit;
+    });
+    document.querySelectorAll(".grp-title").forEach(function (h) {
+      var n = h.nextElementSibling, vis = false;
+      while (n && !n.classList.contains("grp-title")) { if (!n.hidden) vis = true; n = n.nextElementSibling; }
+      h.hidden = !vis;
+    });
+    var e = $("g-empty"); if (e) e.remove();
+    if (!any) $("doc").insertAdjacentHTML("beforeend", '<p class="g-empty" id="g-empty">Nothing matches that search.</p>');
+  });
+
+  function showGuide(me, md) {
+    $("signin").hidden = true; $("guide").hidden = false; $("who").hidden = false;
+    $("who-email").textContent = "Signed in as " + (me || "");
+    render(md);
+  }
+  function showSignin(t) {
+    $("guide").hidden = true; $("who").hidden = true; $("signin").hidden = false;
+    $("f-email").hidden = false; $("f-code").hidden = true; msg(t || "");
+  }
+  function load() {
+    Promise.all([call("/me"), call("/guide")]).then(function (r) {
+      if (r[1]._status === 200) showGuide(r[0].email, r[1].markdown);
+      else showSignin();
+    }).catch(function () { showSignin("Can't reach the Monarch server right now. Try again in a moment.", true); });
+  }
+
+  $("f-email").addEventListener("submit", function (e) {
+    e.preventDefault();
+    email = $("email").value.trim();
+    msg("Sending…");
+    call("/start", { email: email }).then(function (b) {
+      if (b._status !== 200) return msg(b.message || "Something went wrong.", true);
+      msg(b.message);
+      $("f-email").hidden = true; $("f-code").hidden = false; $("code").focus();
+    }).catch(function () { msg("Can't reach the Monarch server right now.", true); });
+  });
+  $("f-code").addEventListener("submit", function (e) {
+    e.preventDefault();
+    msg("Checking…");
+    call("/verify", { email: email, code: $("code").value.replace(/\D/g, "") }).then(function (b) {
+      if (b._status !== 200) return msg(b.message || "Something went wrong.", true);
+      $("code").value = ""; msg("");
+      load();
+    }).catch(function () { msg("Can't reach the Monarch server right now.", true); });
+  });
+  $("back").addEventListener("click", function () { showSignin(); });
+  $("signout").addEventListener("click", function () { call("/logout", {}).then(function () { showSignin("Signed out."); }); });
+
+  load();
+})();
+</script>
+</body>
+</html>

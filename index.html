@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monarch — Adobe automation suite</title>
+<meta name="description" content="Monarch is a suite of Adobe plugins that automates large-batch print and digital production in InDesign, After Effects, Photoshop and Illustrator.">
+<link rel="canonical" href="https://monarch.sunainverse.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Monarch">
+<meta property="og:title" content="Monarch — Adobe automation suite">
+<meta property="og:description" content="Monarch is a suite of Adobe plugins that automates large-batch print and digital production in InDesign, After Effects, Photoshop and Illustrator.">
+<meta property="og:url" content="https://monarch.sunainverse.com/">
+<meta property="og:image" content="https://monarch.sunainverse.com/assets/og-image.jpg?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Monarch: production at scale, without the busywork.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;0,700;1,700;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1b22; --panel:#2e2e2e; --row:#22232b;
+    --navy:#273597; --rule:#4a55a8; --blue:#2c4fbc;
+    --purple:#ac5ce6; --lilac:#dcbaf4;
+    --orange:#ffac01; --orange-dk:#6b4a00; --yellow:#ffe800; --red:#ff2a2a;
+    --text:#fff; --soft:#cfd0da; --muted:#8a8b96; --dot:#ffcc00;
+    --font:"Futura Std",Futura,"Jost","Century Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+  /* ---------- Monarch UI components ---------- */
+  .spark{width:1em;height:1em;flex:none;display:inline-block}
+
+  /* Purple pill — "DOMINATING" / "SUBJECT CLAUDE" / "Install" */
+  .pill{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:6px 20px;border-radius:99px;
+        background:#2a2a33;border:3px solid var(--purple);overflow:hidden;
+        font-weight:800;font-style:oblique;letter-spacing:.04em;white-space:nowrap}
+  .pill::before,.pill::after{content:"";position:absolute;top:-4px;bottom:-4px;width:9px;background:rgba(255,255,255,.22);transform:skewX(-30deg);pointer-events:none}
+  .pill::before{left:22%;box-shadow:13px 0 0 rgba(255,255,255,.22)} .pill::after{right:16%}
+  .pill.lg{font-size:1.25rem;padding:9px 28px;text-transform:uppercase}
+  .pill.sm{font-size:.82rem;padding:4px 16px;text-transform:uppercase}
+  a.pill,button.pill{transition:transform .15s,box-shadow .15s}
+  a.pill:hover,button.pill:hover{transform:translateY(-2px);box-shadow:0 0 0 4px rgba(172,92,230,.25)}
+
+  /* Orange status badge — "SERVING THE MONARCH" / "DOMINATED" */
+  .status{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 14px;border-radius:99px;
+          background:var(--bg);border:4px solid var(--orange);box-shadow:inset 0 0 0 3px var(--orange-dk);overflow:hidden;
+          font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);font-size:.82rem;transition:border-color .3s,color .3s,box-shadow .3s}
+  .status::before,.status::after{content:"";position:absolute;top:-4px;bottom:-4px;width:7px;background:rgba(255,255,255,.2);transform:skewX(-30deg)}
+  .status::before{left:13%;box-shadow:10px 0 0 rgba(255,255,255,.2)} .status::after{right:12%}
+  .status .spark{font-size:1.5em}
+  .status span{flex:1;text-align:center}
+  .status.off{border-color:var(--purple);box-shadow:none;color:#fff;font-weight:500;letter-spacing:.04em}
+  .status.off .spark{visibility:hidden}
+  .status.fail{border-color:var(--red);box-shadow:inset 0 0 0 3px #5a1010;color:var(--red);font-style:oblique;font-weight:800}
+
+  /* Navy action button — "Send Selection to AE" */
+  .act{display:block;width:100%;padding:9px 14px;border-radius:9px;background:var(--bg);border:3px solid var(--navy);
+       font-weight:700;text-align:center;transition:border-color .15s,background .15s}
+  .act:hover{border-color:var(--blue);background:#1f2130}
+  .act.on{border-color:var(--orange)}
+
+  /* Orange progress bar */
+  .prog{position:relative;height:30px;border-radius:99px;background:var(--bg);border:3px solid var(--orange-dk);overflow:hidden}
+  .prog .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--orange);border-radius:99px;transition:width .25s linear}
+  .prog .spark{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:18px;z-index:2}
+  .prog .spark{--sp-o:#fff;--sp-i:var(--orange)}
+  .prog .txt{position:absolute;inset:0;display:grid;place-items:center;font-weight:700;font-size:.85rem;z-index:2}
+
+  .log{background:var(--bg);border-radius:4px;padding:12px 14px;color:var(--muted);font-size:.85rem;line-height:1.6;overflow-y:auto}
+  .log b{font-weight:500;color:var(--soft)}
+
+  /* App glyph — purple-rimmed Adobe tiles */
+  .glyph{display:grid;place-items:center;width:42px;height:42px;border-radius:7px;border:3px solid var(--purple);font-weight:700;font-size:1.05rem;flex:none}
+  .g-id{background:#49021f;color:#ff3366} .g-ai{background:#330000;color:#ff9a00}
+  .g-ps{background:#001e36;color:#31a8ff} .g-ae{background:#00005b;color:#9999ff} .g-cr{background:#14301e;color:#6ad892}
+  .dot{width:12px;height:12px;border-radius:50%;background:var(--dot);flex:none}
+  .dot.idle{background:#bdbdbd}
+
+  /* ---------- Layout ---------- */
+  nav{position:sticky;top:0;z-index:30;background:rgba(26,27,34,.92);backdrop-filter:blur(10px);border-bottom:2px solid var(--rule)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+  .brand{display:flex;align-items:center;gap:18px}
+  .brand .ol{height:44px;width:auto}
+  .brand .wm{height:30px;width:auto}
+  .nav-r{display:flex;align-items:center;gap:22px}
+  .nav-links{display:flex;gap:24px;list-style:none;font-weight:500;color:var(--soft)}
+  .nav-links a:hover{color:var(--orange)}
+  .nav-pill{display:flex;align-items:center;gap:8px}
+  .nav-pill .spark{font-size:22px}
+
+  header{position:relative;padding:72px 0 96px;overflow:hidden}
+  .ghost{position:absolute;right:-60px;bottom:-80px;width:620px;opacity:.07;pointer-events:none}
+  .hero{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero-tag{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+  .hero-tag small{color:var(--muted);font-size:.95rem}
+  h1{font-size:clamp(2.5rem,5.6vw,4.4rem);line-height:1.04;font-weight:700;margin-bottom:22px}
+  h1 em{font-style:oblique;font-weight:800;color:var(--orange)}
+  .lead{color:var(--soft);font-size:1.15rem;max-width:520px;margin-bottom:34px}
+  .btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .btns .act{width:auto;padding:10px 26px}
+  .hero-art{position:relative;max-width:420px;justify-self:end;width:100%}
+  .hero-art .mark{width:100%;height:auto;filter:drop-shadow(0 24px 50px rgba(44,79,188,.55))}
+  .hero-art .spark{position:absolute;animation:tw 3s ease-in-out infinite}
+  .hero-art .s1{top:-6%;right:6%;font-size:46px}
+  .hero-art .s2{bottom:4%;left:-4%;font-size:30px;animation-delay:1s}
+  .hero-art .s3{top:40%;right:-5%;font-size:22px;animation-delay:2s}
+  @keyframes tw{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(.55) rotate(25deg)}}
+
+  section{padding:88px 0;border-top:2px solid var(--rule)}
+  .head{margin-bottom:40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);font-size:.85rem}
+  .eyebrow .spark{font-size:18px}
+  h2{font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.12;font-weight:700;margin:12px 0 10px}
+  .sub{color:var(--soft);max-width:620px}
+
+  /* Plugin rows (dashboard) */
+  .rows{border-top:2px solid var(--rule)}
+  .prow{display:flex;align-items:center;gap:18px;padding:18px 4px;border-bottom:2px solid var(--rule)}
+  .prow .meta{flex:1;min-width:0}
+  .prow .meta h3{font-weight:500;font-size:1.15rem}
+  .prow .meta p{color:var(--muted);font-size:.95rem}
+  .prow .pill{min-width:132px}
+
+  /* Live panel demo */
+  .demo{display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:start}
+  .panel{background:var(--panel);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+  .panel .log{height:150px;margin-top:6px}
+  .panel .prog{display:none}
+  .panel .prog.show{display:block}
+  .demo-copy .sub{margin-bottom:24px}
+  .tool-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .tool{padding:18px;border-radius:9px;background:var(--row);border:3px solid var(--navy);transition:border-color .2s}
+  .tool:hover,.tool.on{border-color:var(--orange)}
+  .tool h3{font-weight:700;font-size:1.02rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .tool h3 .spark{font-size:16px}
+  .tool p{color:var(--soft);font-size:.92rem}
+  .tool small{display:block;margin-top:8px;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.06em;font-size:.7rem;color:var(--purple)}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;counter-reset:s}
+  .step{counter-increment:s;background:var(--panel);border-radius:6px;padding:22px}
+  .step::before{content:"0" counter(s);display:block;font-size:2.4rem;font-weight:800;font-style:oblique;color:var(--orange);line-height:1;margin-bottom:12px}
+  .step h3{font-weight:700;margin-bottom:6px}
+  .step p{color:var(--soft);font-size:.95rem}
+
+  /* Coming soon — loading state */
+  .cta{text-align:center}
+  .loading{display:flex;flex-direction:column;align-items:center;gap:10px;margin:0 auto 26px}
+  .compass{width:64px;height:64px;animation:spin 6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading em{color:var(--soft);font-style:oblique}
+  .cta .sub{margin:0 auto 30px}
+  .dl-meta{margin-top:14px;color:var(--soft);font-size:.9rem}
+  .dl-steps{max-width:560px;margin:28px auto 0;text-align:left;color:var(--soft);line-height:1.55;padding-left:1.4em}
+  .dl-steps li{margin-bottom:10px}
+  .dl-steps b{color:var(--text,#fff)}
+
+  footer{border-top:2px solid var(--rule);padding:16px 0 22px;color:var(--muted);font-weight:700;font-size:.9rem}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media (max-width:900px){
+    .hero,.demo{grid-template-columns:1fr}
+    .hero-art{max-width:360px;justify-self:center;margin-top:10px}
+    .panel{max-width:360px}
+    .nav-links{display:none}
+  }
+  @media (max-width:520px){
+    .brand .ol{display:none}
+    .brand .wm{height:24px}
+    .nav-pill .spark{display:none}
+    .prow{display:grid;grid-template-columns:auto auto 1fr;column-gap:14px;row-gap:10px}
+    .prow .pill{grid-column:3;justify-self:start;min-width:0}
+    .pill.lg{font-size:1.05rem}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="sp" viewBox="0 0 24 24">
+    <path style="fill:var(--sp-o,#ffac01)" d="M12 0c.5 6 1.6 9.2 3 10.2 1.3 1 4.6 1.5 9 1.8-4.4.3-7.7.8-9 1.8-1.4 1-2.5 4.2-3 10.2-.5-6-1.6-9.2-3-10.2-1.3-1-4.6-1.5-9-1.8 4.4-.3 7.7-.8 9-1.8C10.4 9.2 11.5 6 12 0z"/>
+    <path style="fill:var(--sp-i,#fff)" d="M12 6.5c.3 3 .8 4.4 1.5 4.9.6.4 1.9.5 3.5.6-1.6.1-2.9.2-3.5.6-.7.5-1.2 1.9-1.5 4.9-.3-3-.8-4.4-1.5-4.9-.6-.4-1.9-.5-3.5-.6 1.6-.1 2.9-.2 3.5-.6.7-.5 1.2-1.9 1.5-4.9z"/>
+  </symbol>
+</svg>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand" aria-label="Monarch home">
+      <img class="ol" src="assets/logo-outline.webp" alt="" width="197" height="170">
+      <img class="wm" src="assets/wordmark.webp" alt="Monarch" width="614" height="152">
+    </a>
+    <div class="nav-r">
+      <ul class="nav-links">
+        <li><a href="#suite">Suite</a></li>
+        <li><a href="#panel">Tools</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#download">Download</a></li>
+        <li><a href="guide.html">Guide</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav-pill">
+        <svg class="spark"><use href="#sp"/></svg>
+        <span class="pill sm">Dominating</span>
+        <svg class="spark"><use href="#sp"/></svg>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <img class="ghost" src="assets/logo-outline.webp" alt="">
+  <div class="wrap hero">
+    <div>
+      <div class="hero-tag">
+        <span class="pill lg"><svg class="spark"><use href="#sp"/></svg>Adobe automation</span>
+        <small>InDesign · After Effects · Photoshop · Illustrator</small>
+      </div>
+      <h1>Production at scale, <em>without the busywork.</em></h1>
+      <p class="lead">Monarch is a suite of plugins that takes over the repetitive part of large-batch print and digital production, right inside the Adobe apps you already use.</p>
+      <div class="btns">
+        <a href="#download" class="pill lg">Download for Mac</a>
+        <a href="#panel" class="act">Try the panel</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img class="mark" src="assets/mark.webp" alt="Monarch logo" width="900" height="771">
+      <svg class="spark s1"><use href="#sp"/></svg>
+      <svg class="spark s2"><use href="#sp"/></svg>
+      <svg class="spark s3"><use href="#sp"/></svg>
+    </div>
+  </div>
+</header>
+
+<section id="suite">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>The suite</span>
+      <h2>One plugin per app, one bridge to rule them all</h2>
+      <p class="sub">Every Adobe app gets its own Suna-Monarch panel. The Monarch bridge connects them, so work moves between apps instead of being rebuilt by hand.</p>
+    </div>
+    <div class="rows">
+      <div class="prow"><span class="dot"></span><span class="glyph g-id">Id</span><div class="meta"><h3>Suna-Monarch (InDesign)</h3><p>The hub: Great Sage, Diagnose, Mini Sage and every send-to action</p></div><span class="pill sm"><svg class="spark"><use href="#sp"/></svg>Coming</span></div>
+      <div class="prow"><span class="dot"></span><span class="glyph g-ai">Ai</span><div class="meta"><h3>Suna-Monarch (Illustrator)</h3><p>Receives page sizes and layers, sends selections to After Effects</p></div><span class="pill sm">Coming</span></div>
+      <div class="prow"><span class="dot"></span><span class="glyph g-ps">Ps</span><div class="meta"><h3>Suna-Monarch (Photoshop)</h3><p>Sends document sizes, selections and layers to After Effects</p></div><span class="pill sm">Coming</span></div>
+      <div class="prow"><span class="dot"></span><span class="glyph g-ae">Ae</span><div class="meta"><h3>Suna-Monarch (After Effects)</h3><p>The receiver: comps and layers from the other apps land here</p></div><span class="pill sm">Coming</span></div>
+      <div class="prow"><span class="dot idle"></span><span class="glyph g-cr">Cr</span><div class="meta"><h3>Monarch (Chrome)</h3><p>Relays what you're looking at in the browser straight to InDesign</p></div><span class="pill sm">Coming</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="panel">
+  <div class="wrap demo">
+    <div class="panel" aria-label="Interactive Monarch panel demo">
+      <div class="status off" id="st"><svg class="spark"><use href="#sp"/></svg><span id="stTxt">Disconnected</span><svg class="spark"><use href="#sp"/></svg></div>
+      <button class="act" data-t="connect">Connect to Monarch</button>
+      <button class="act" data-t="sage">Run The Great Sage</button>
+      <button class="act" data-t="diagnose">Diagnose against CSV</button>
+      <button class="act" data-t="bust">Layer Bust</button>
+      <div class="prog" id="pg"><svg class="spark"><use href="#sp"/></svg><div class="fill" id="pgF"></div><div class="txt" id="pgT"></div></div>
+      <button class="act" data-t="pretender">Pretender</button>
+      <button class="act" data-t="ae">Send Layout to AE</button>
+      <div class="log" id="log"><b>[00:00:00]</b> panel ready — click a button</div>
+    </div>
+    <div class="demo-copy">
+      <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>The toolkit</span>
+      <h2>Every tool is one click away</h2>
+      <p class="sub">This is the Monarch panel. Connect it, then press any button to see what that tool does.</p>
+      <div class="tool-list" id="tools">
+        <div class="tool" data-t="sage"><h3><svg class="spark"><use href="#sp"/></svg>The Great Sage</h3><p>The core toolkit for everyday InDesign production, in one panel.</p><small>Panel</small></div>
+        <div class="tool" data-t="diagnose"><h3><svg class="spark"><use href="#sp"/></svg>Diagnose</h3><p>Compares CSV data with the open document and fixes anything that doesn't match.</p><small>Panel</small></div>
+        <div class="tool" data-t="bust"><h3><svg class="spark"><use href="#sp"/></svg>Layer Bust</h3><p>Copies a layer from a set of source files into matching target files in one batch.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="shark"><h3><svg class="spark"><use href="#sp"/></svg>Layershark</h3><p>Moves every text frame onto a fresh top layer, ready for translation.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="pretender"><h3><svg class="spark"><use href="#sp"/></svg>Pretender</h3><p>Loads a CSV of translations and replaces them one by one, or all at once.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="reroute"><h3><svg class="spark"><use href="#sp"/></svg>Reroute</h3><p>Points a missing link at a folder and relinks it, searching every subfolder.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="taster"><h3><svg class="spark"><use href="#sp"/></svg>Mini Taster</h3><p>Exports to PDF with your chosen preset, then saves and closes the file if you want.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="ae"><h3><svg class="spark"><use href="#sp"/></svg>InDesign → After Effects</h3><p>Sends pages, selections and links from print to motion.</p><small>Bridge</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>How it works</span>
+      <h2>Install once, automate everything</h2>
+      <p class="sub">A small menu-bar app runs the bridge and installs a plugin into each Adobe app for you.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><h3>Sign in</h3><p>Open Monarch and sign in with the email address your invite went to. A 6-digit code arrives by email; no password.</p></div>
+      <div class="step"><h3>Install the plugins</h3><p>Press Install next to each Adobe app in the Monarch menu-bar app.</p></div>
+      <div class="step"><h3>Connect to Monarch</h3><p>Open the panel in any app. The badge switches to Serving the Monarch once it's connected.</p></div>
+      <div class="step"><h3>Run the batch</h3><p>Point a tool at a folder, a CSV or a selection, and let it work through hundreds of files.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="download">
+  <div class="wrap">
+    <h2>Get Monarch</h2>
+    <p class="sub">For invited members. The app is free to download; the plugins unlock when you sign in with the email address your invite went to.</p>
+    <a href="https://github.com/Suna-Inverse/monarch/releases/latest/download/Monarch.dmg" class="pill lg"><svg class="spark"><use href="#sp"/></svg>Download for Mac</a>
+    <p class="dl-meta">macOS · Apple Silicon and Intel</p>
+    <ol class="dl-steps">
+      <li><b>Open Monarch.dmg</b> and drag Monarch into Applications.</li>
+      <li><b>Open Monarch.</b> The first time, macOS says it can't check the app. Click Done, open <b>System Settings › Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b>.</li>
+      <li><b>Sign in</b> with your email address and the 6-digit code you receive.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Developed by Suna · <a href="about.html">About</a> · <a href="privacy.html">Privacy</a></span>
+    <span>© 2026 Monarch</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var T={
+    connect:{msg:"connected to bridge"},
+    sage:{msg:"The Great Sage — production toolkit ready",steps:5,label:"Summoning the Sage"},
+    diagnose:{msg:"Diagnose — 3 differences found and fixed",steps:12,label:"Checking row"},
+    bust:{msg:"Layer Bust — layer copied into 9 files",steps:9,label:"Copying layer"},
+    shark:{msg:"Layershark — 42 text frames moved to te_vertalen",steps:6,label:"Moving frames"},
+    pretender:{msg:"Pretender — 128 translations replaced",steps:8,label:"Replacing"},
+    reroute:{msg:"Reroute — missing link found and relinked",steps:4,label:"Searching folder"},
+    taster:{msg:"Mini Taster — PDF exported",steps:3,label:"Exporting page"},
+    ae:{msg:"sent layout to After Effects",steps:9,label:"Sending layer"}
+  };
+  var st=document.getElementById('st'),stT=document.getElementById('stTxt'),log=document.getElementById('log'),
+      pg=document.getElementById('pg'),pgF=document.getElementById('pgF'),pgT=document.getElementById('pgT'),
+      connected=false,busy=false,t0=Date.now();
+  function stamp(){var s=Math.floor((Date.now()-t0)/1000)+43441;function p(n){return(n<10?'0':'')+n}
+    return '['+p(Math.floor(s/3600)%24)+':'+p(Math.floor(s/60)%60)+':'+p(s%60)+']'}
+  function say(m){var d=document.createElement('div');d.innerHTML='<b>'+stamp()+'</b> '+m;log.appendChild(d);log.scrollTop=log.scrollHeight}
+  function mark(k){document.querySelectorAll('[data-t]').forEach(function(e){e.classList.toggle('on',e.dataset.t===k)})}
+  function run(k){
+    if(busy)return; var t=T[k]; if(!t)return; mark(k);
+    if(k==='connect'){connected=true;st.className='status';stT.textContent='Serving the Monarch';say(t.msg);return}
+    if(!connected){st.className='status fail';stT.textContent='Failure';say('domination failed — connect to Monarch first');return}
+    busy=true;var n=0;pg.classList.add('show');
+    var iv=setInterval(function(){n++;pgF.style.width=(n/t.steps*100)+'%';pgT.textContent=t.label+' '+n+' of '+t.steps+'…';
+      if(n>=t.steps){clearInterval(iv);setTimeout(function(){pg.classList.remove('show');pgF.style.width=0;busy=false;
+        st.className='status';stT.textContent='Dominated';say(t.msg);
+        setTimeout(function(){if(!busy)stT.textContent='Serving the Monarch'},1600)},350)}},180);
+  }
+  document.querySelectorAll('.panel [data-t], .tool[data-t]').forEach(function(b){
+    b.addEventListener('click',function(){
+      if(b.classList.contains('tool')){ if(!connected) run('connect'); var p=document.querySelector('.panel'); if(window.innerWidth<900) p.scrollIntoView({behavior:'smooth',block:'center'}); }
+      run(b.dataset.t)});
+  });
+  document.querySelectorAll('.tool').forEach(function(t){t.style.cursor='pointer'});
+})();
+</script>
+</body>
+</html>
