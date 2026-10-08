@@ -183,6 +183,26 @@
     .pill.lg{font-size:1.05rem}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* Request access */
+  .request{text-align:center}
+  .req-card{max-width:560px;margin:0 auto;text-align:left;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:28px 28px 24px}
+  .req-card label{display:block;font-weight:700;font-size:.92rem;margin-bottom:6px}
+  .req-card label span{color:var(--muted);font-weight:400}
+  .req-card input,.req-card textarea{width:100%;font:inherit;font-size:1rem;padding:11px 14px;border-radius:8px;border:2px solid var(--rule);background:var(--bg);color:var(--text);margin-bottom:16px}
+  .req-card textarea{min-height:96px;resize:vertical}
+  .req-card input:focus,.req-card textarea:focus{outline:none;border-color:var(--yellow)}
+  .req-card .two{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .req-card .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  .req-card .pill{border:3px solid var(--purple)}
+  .req-card .note{color:var(--muted);font-size:.85rem;margin-top:14px}
+  .req-card .note a{text-decoration:underline;text-underline-offset:3px}
+  .req-msg{margin-top:12px;min-height:1.4em;color:var(--soft)}
+  .req-msg.err{color:#ff8a8a}
+  .req-done{text-align:center;padding:10px 0}
+  .req-done b{display:block;font-size:1.4rem;font-style:oblique;font-weight:800;color:var(--orange);margin-bottom:6px}
+  .req-done p{color:var(--soft)}
+  @media (max-width:520px){.req-card{padding:22px 18px}.req-card .two{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -309,7 +329,7 @@
 <section class="cta" id="download">
   <div class="wrap">
     <h2>Get Monarch</h2>
-    <p class="sub">For invited members. The app is free to download; the plugins unlock when you sign in with the email address your invite went to.</p>
+    <p class="sub">For invited members. The app is free to download; the plugins unlock when you sign in with the email address your invite went to. No invite yet? <a href="#request" style="color:var(--lilac);text-decoration:underline;text-underline-offset:3px">Request access</a>.</p>
     <a href="https://github.com/Suna-Inverse/monarch/releases/latest/download/Monarch.dmg" class="pill lg"><svg class="spark"><use href="#sp"/></svg>Download for Mac</a>
     <p class="dl-meta">macOS · Apple Silicon and Intel</p>
     <ol class="dl-steps">
@@ -319,6 +339,35 @@
     </ol>
   </div>
 </section>
+
+<section class="request" id="request">
+  <div class="wrap">
+    <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>No invite yet?</span>
+    <h2>Request access</h2>
+    <p class="sub" style="margin:0 auto 30px">Tell me who you are and you'll get an invite by email once your request is approved.</p>
+    <div class="req-card">
+      <form id="req-form" novalidate>
+        <div class="two">
+          <div><label for="req-name">Name</label><input id="req-name" name="name" autocomplete="name" maxlength="80" required></div>
+          <div><label for="req-email">Email address</label><input id="req-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="name@example.com" required></div>
+        </div>
+        <label for="req-team">Team or company <span>(optional)</span></label>
+        <input id="req-team" name="team" autocomplete="organization" maxlength="80">
+        <label for="req-message">What would you use Monarch for? <span>(optional)</span></label>
+        <textarea id="req-message" name="message" maxlength="1000"></textarea>
+        <div class="hp" aria-hidden="true"><label for="req-website">Website</label><input id="req-website" name="website" tabindex="-1" autocomplete="off"></div>
+        <button class="pill" type="submit"><svg class="spark"><use href="#sp"/></svg>Request access</button>
+        <div class="req-msg" id="req-msg" role="status"></div>
+        <p class="note">Your details are only used to handle this request. See <a href="privacy.html">Privacy</a>.</p>
+      </form>
+      <div class="req-done" id="req-done" hidden>
+        <b>Request sent</b>
+        <p>Thanks! You'll get an email invite at <span id="req-to"></span> once it's approved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <footer>
   <div class="wrap">
@@ -363,6 +412,32 @@
       run(b.dataset.t)});
   });
   document.querySelectorAll('.tool').forEach(function(t){t.style.cursor='pointer'});
+})();
+</script>
+
+<script>
+(function () {
+  var form = document.getElementById("req-form"); if (!form) return;
+  var shown = Date.now(), busy = false, msg = document.getElementById("req-msg");
+  function say(t, err) { msg.textContent = t || ""; msg.className = "req-msg" + (err ? " err" : ""); }
+  form.addEventListener("submit", function (e) {
+    e.preventDefault(); if (busy) return;
+    var v = function (id) { return document.getElementById(id).value.trim(); };
+    var data = { name: v("req-name"), email: v("req-email"), team: v("req-team"), message: v("req-message"), website: v("req-website"), t: shown };
+    if (!data.name) return say("Please fill in your name.", true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return say("That doesn't look like an email address.", true);
+    busy = true; say("Sending…");
+    fetch("https://api.sunainverse.com/v1/web/request-access", {
+      method: "POST", headers: { "content-type": "application/json", "x-monarch": "1" }, body: JSON.stringify(data)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (b) {
+        busy = false;
+        if (!r.ok) return say(b.message || "Something went wrong. Try again or email hello@sunainverse.com.", true);
+        document.getElementById("req-to").textContent = data.email;
+        form.hidden = true; document.getElementById("req-done").hidden = false;
+      });
+    }).catch(function () { busy = false; say("Can't reach the Monarch server right now. Try again or email hello@sunainverse.com.", true); });
+  });
 })();
 </script>
 </body>
