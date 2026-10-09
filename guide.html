@@ -314,7 +314,7 @@
     <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Members only</span>
     <h1>Tools guide</h1>
     <p class="sub">What every Monarch tool does, when to use it and how, step by step. Sign in with the email address your invite went to.</p>
-    <div class="g-who" id="who" hidden><span id="who-email"></span><a href="account.html" style="color:var(--lilac);text-decoration:underline">My account</a><button id="signout">Sign out</button></div>
+    <div class="g-who" id="who" hidden><span id="who-email"></span><a href="account.html" style="color:var(--lilac);text-decoration:underline">My account</a><a href="admin.html" id="admin-link" hidden style="color:var(--lilac);text-decoration:underline">Admin page</a><button id="signout">Sign out</button></div>
   </div>
 </section>
 
@@ -479,7 +479,7 @@
   }
   function load() {
     Promise.all([call("/me"), call("/guide")]).then(function (r) {
-      if (r[1]._status === 200) showGuide(r[0].email, r[1].markdown);
+      if (r[1]._status === 200) { showGuide(r[0].email, r[1].markdown); $("admin-link").hidden = !r[0].admin; }
       else showSignin();
     }).catch(function () { showSignin("Can't reach the Monarch server right now. Try again in a moment.", true); });
   }

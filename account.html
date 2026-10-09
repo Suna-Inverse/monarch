@@ -332,7 +332,7 @@
     <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Members only</span>
     <h1>My account</h1>
     <p class="sub">See which Macs you're signed in on, and free up a slot yourself when you get a new one. Sign in with the email address your invite went to.</p>
-    <div class="g-who" id="who" hidden><span id="who-email"></span><a href="guide.html">Tools guide</a><button id="signout">Sign out</button></div>
+    <div class="g-who" id="who" hidden><span id="who-email"></span><a href="guide.html">Tools guide</a><a href="admin.html" id="admin-link" hidden>Admin page</a><button id="signout">Sign out</button></div>
   </div>
 </section>
 
@@ -419,6 +419,7 @@
   function show(a) {
     $("signin").hidden = true; $("account").hidden = false; $("who").hidden = false;
     $("who-email").textContent = "Signed in as " + a.email;
+    $("admin-link").hidden = !a.admin;
     $("acc-name").textContent = a.name || "Your account";
     $("acc-email").textContent = a.email + " · access switched on";
     var n = a.macs.length, max = a.max_devices || 2;
