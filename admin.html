@@ -342,6 +342,15 @@
   .request .name{font-weight:700}
   .request .rmsg{color:var(--soft);white-space:pre-wrap;margin-top:6px;font-size:.95rem}
   .request .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .rep-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .report{background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+  .report.solved{opacity:.7}
+  .report .rhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+  .report .rhead b{color:var(--yellow)}
+  .report .rtext{white-space:pre-wrap;margin:8px 0 10px;overflow-wrap:anywhere}
+  .report .rnote{color:var(--lilac);font-size:.9rem;margin-bottom:8px}
+  .report .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .report pre{max-height:420px;overflow:auto;background:#121219;border:2px solid var(--navy);border-radius:8px;padding:12px;margin:12px 0 0;font-size:.75rem;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
   .tabs .count{display:inline-block;margin-left:6px;background:var(--orange);color:#1a1b22;border-radius:99px;font-size:.72rem;padding:0 7px;vertical-align:2px}
   @media (max-width:640px){
     .person{grid-template-columns:auto 1fr}
@@ -424,6 +433,7 @@
   <div class="wrap">
     <div class="tabs" role="tablist">
       <button data-tab="people" class="on">People</button>
+      <button data-tab="reports">Reports</button>
       <button data-tab="settings">Settings</button>
       <button data-tab="scripts">Scripts</button>
       <button data-tab="news">What's new</button>
@@ -445,6 +455,17 @@
       <div class="people" id="people"></div>
     </div>
 
+    <div data-pane="reports" hidden>
+      <div class="rep-bar">
+        <p class="sub" style="margin:0;flex:1">Problems sent from the Monarch app. Solved reports are removed after 180 days.</p>
+        <select class="field" id="rep-filter" aria-label="Show">
+          <option value="open">Open</option><option value="solved">Solved</option><option value="all">All</option>
+        </select>
+      </div>
+      <div class="msg" id="rep-msg"></div>
+      <div id="reports"></div>
+    </div>
+
     <div data-pane="settings" hidden>
       <div class="card settings">
         <label class="switch"><input type="checkbox" id="ks"> Kill switch: pause Monarch for everyone (plugins lock, downloads stop)</label>
@@ -462,7 +483,7 @@
 
       <div class="card settings" style="margin-top:16px">
         <h3 class="cl-title">Claude connector</h3>
-        <p class="meta">Lets Claude update What's new and the Tools guide for you, from any Claude chat. It can't see or change people, Macs, settings or scripts.</p>
+        <p class="meta">Lets Claude update What's new and the Tools guide for you, and read problem reports (it asks you before fixing anything). It can't see or change people, Macs, settings or scripts.</p>
         <label class="switch" style="margin-top:12px"><input type="checkbox" id="cl-on"> Allow the Claude connector</label>
         <div class="row">
           <span class="meta">Connector URL</span>
@@ -702,6 +723,54 @@
       p = api("/requests/" + b.dataset.decline, { method: "DELETE" });
     }
     if (p) { b.disabled = true; p.then(function () { return Promise.all([loadRequests(), loadPeople()]); }).catch(function (err) { b.disabled = false; alert(err.message); }); }
+  };
+
+  // ----- problem reports (from the Monarch app) -----
+  var repCache = {};
+  function loadReports() {
+    var filter = $("rep-filter").value;
+    return Promise.all([api("/reports?status=" + filter), filter === "open" ? null : api("/reports?status=open")]).then(function (res) {
+      var list = res[0].reports || [], open = (res[1] || res[0]).reports.length;
+      var tab = document.querySelector('.tabs button[data-tab="reports"]');
+      tab.innerHTML = "Reports" + (open ? '<span class="count">' + open + "</span>" : "");
+      $("reports").innerHTML = list.length ? list.map(function (r) {
+        return '<div class="report' + (r.status === "solved" ? " solved" : "") + '" data-id="' + r.id + '">' +
+          '<div class="rhead"><b>#' + r.id + "</b><span>" + esc(r.email) + "</span><span class=\"meta\">" + esc(r.device_name || "Mac") +
+          (r.app_version ? " · app " + esc(r.app_version) : "") + " · " + ago(r.created_at) + (r.status === "solved" ? " · solved" : "") + "</span></div>" +
+          '<div class="rtext">' + esc(r.message) + (r.message.length >= 400 ? "…" : "") + "</div>" +
+          (r.note ? '<div class="rnote">Note: ' + esc(r.note) + "</div>" : "") +
+          '<div class="btns">' +
+          '<button class="btn small" data-view="' + r.id + '">' + (r.log_size ? "Full report + log (" + kb(r.log_size) + ")" : "Full report") + "</button>" +
+          '<button class="btn small" data-note="' + r.id + '">Note</button>' +
+          (r.status === "solved" ? '<button class="btn small" data-status="open" data-r="' + r.id + '">Reopen</button>'
+                                 : '<button class="btn small" data-status="solved" data-r="' + r.id + '">Mark solved</button>') +
+          '<button class="btn small danger" data-del="' + r.id + '">Delete</button></div></div>';
+      }).join("") : '<p class="meta">' + (filter === "open" ? "No open reports. All quiet." : "Nothing here.") + "</p>";
+    });
+  }
+  $("rep-filter").onchange = function () { loadReports().catch(function (err) { say($("rep-msg"), err.message, true); }); };
+  $("reports").onclick = function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var card = b.closest(".report"), id = card && card.dataset.id, p;
+    if (b.dataset.view) {
+      var old = card.querySelector(".rfull"); if (old) { old.remove(); b.classList.remove("on"); return; }
+      p = (repCache[id] ? Promise.resolve(repCache[id]) : api("/reports/" + id)).then(function (r) {
+        repCache[id] = r;
+        var div = document.createElement("div"); div.className = "rfull";
+        div.innerHTML = '<div class="rtext">' + esc(r.message) + "</div>" + (r.log ? "<pre>" + esc(r.log) + "</pre>" : '<p class="meta">No log was included.</p>');
+        card.appendChild(div);
+      });
+    } else if (b.dataset.note) {
+      var cur = card.querySelector(".rnote"), n = prompt("Note for report #" + id + " (empty removes it):", cur ? cur.textContent.replace(/^Note: /, "") : "");
+      if (n === null) return;
+      p = api("/reports/" + id, { method: "PATCH", body: { note: n } }).then(loadReports);
+    } else if (b.dataset.status) {
+      p = api("/reports/" + id, { method: "PATCH", body: { status: b.dataset.status } }).then(loadReports);
+    } else if (b.dataset.del) {
+      if (!confirm("Delete report #" + id + " and its log?")) return;
+      p = api("/reports/" + id, { method: "DELETE" }).then(function () { delete repCache[id]; return loadReports(); });
+    }
+    if (p) { b.disabled = true; p.catch(function (err) { say($("rep-msg"), err.message, true); }).then(function () { b.disabled = false; }); }
   };
 
   // ----- settings -----
@@ -981,7 +1050,7 @@
       myEmail = me.email; maxDevices = me.max_devices;
       $("who-email").textContent = "Signed in as " + me.email;
       $("who").hidden = false; $("signin").hidden = true; $("app").hidden = false;
-      return Promise.all([loadRequests(), loadPeople(), loadSettings(), loadScripts(), loadNews(), loadGuideEditor(), loadClaude()]);
+      return Promise.all([loadRequests(), loadPeople(), loadSettings(), loadScripts(), loadNews(), loadGuideEditor(), loadClaude(), loadReports()]);
     }).catch(function (err) {
       if (err.status === 401) { $("app").hidden = true; $("who").hidden = true; $("signin").hidden = false; }
       else say($("login-msg"), err.message || "Can't reach the Monarch server right now.", true);
