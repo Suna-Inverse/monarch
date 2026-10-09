@@ -296,6 +296,28 @@
   .script .sbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .script textarea,.script input{width:100%;margin-top:8px}
   .empty{color:var(--soft)}
+  .gbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .gbar .msg{margin:0}
+  .gbar .glink{margin-left:auto;color:var(--lilac);text-decoration:underline}
+  .gedit{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  #g-text{width:100%;height:70vh;min-height:420px;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:.86rem;line-height:1.5}
+  .gprev{height:70vh;min-height:420px;overflow:auto;border:2px solid var(--rule);border-radius:8px;padding:16px;background:var(--bg)}
+  .gcheat{color:var(--soft);font-size:.85rem;margin-top:8px;line-height:1.8}
+  .gcheat summary{cursor:pointer;color:var(--lilac);font-weight:700}
+  .gcheat code,.gprev code{background:var(--row);padding:1px 6px;border-radius:4px;font-size:.9em}
+  .gprev h1.grp-title{font-size:1.3rem;font-weight:800;font-style:oblique;color:var(--orange);margin:24px 0 10px}
+  .gprev h1.grp-title:first-child{margin-top:0}
+  .gprev .tool-doc{background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:16px 18px;margin-bottom:14px;overflow-wrap:anywhere}
+  .gprev .tool-doc h2{font-size:1.2rem;font-weight:700;margin-bottom:2px}
+  .gprev .tool-doc .meta{color:var(--lilac);font-size:.85rem;margin-bottom:10px}
+  .gprev .tool-doc h3{font-size:.78rem;font-weight:800;font-style:oblique;text-transform:uppercase;letter-spacing:.08em;color:var(--yellow);margin:16px 0 6px}
+  .gprev .tool-doc p,.gprev .tool-doc ul,.gprev .tool-doc ol{color:var(--soft);margin-bottom:8px}
+  .gprev .tool-doc ul,.gprev .tool-doc ol{padding-left:1.3em}
+  .gprev .tool-doc strong{color:var(--text)}
+  .ghist-title{font-size:1.05rem;font-weight:700;margin:26px 0 4px}
+  #g-hist{display:grid;gap:8px;margin-top:10px}
+  .ghrow{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--row);border:2px solid var(--navy);border-radius:8px;padding:10px 14px}
+  @media (max-width:900px){.gedit{grid-template-columns:1fr}#g-text,.gprev{height:50vh;min-height:300px}}
   .tag.shared{color:var(--lilac);border-color:var(--purple)}
   .news-form h3,.due h3{font-size:1.05rem;font-weight:700;margin-bottom:6px}
   .news-form .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
@@ -396,6 +418,7 @@
       <button data-tab="settings">Settings</button>
       <button data-tab="scripts">Scripts</button>
       <button data-tab="news">What's new</button>
+      <button data-tab="guide">Guide</button>
     </div>
 
     <div class="banner" id="ks-banner" hidden>Kill switch is on: Monarch is paused for everyone.</div>
@@ -427,6 +450,28 @@
         </div>
         <div class="msg" id="set-msg"></div>
       </div>
+    </div>
+
+    <div data-pane="guide" hidden>
+      <div class="gbar">
+        <button class="pill" type="button" id="g-save">Save guide</button>
+        <span class="msg" id="g-msg"></span>
+        <a href="guide.html" target="_blank" rel="noopener" class="glink">Open the Tools guide ↗</a>
+      </div>
+      <div class="gedit">
+        <div>
+          <textarea class="field" id="g-text" spellcheck="true" aria-label="Guide text"></textarea>
+          <details class="gcheat"><summary>Formatting</summary>
+            <code># Group</code> app group (InDesign, Photoshop…) · <code>## Tool name</code> one card per tool ·
+            <code>*App: InDesign · Panel: Monarch*</code> grey line under the title · <code>### Steps</code> small heading ·
+            <code>- item</code> / <code>1. item</code> lists (indent 2 spaces for a sub-item) · <code>**bold**</code> · <code>*italic*</code> · <code>`code`</code>
+          </details>
+        </div>
+        <div class="gprev" id="g-prev" aria-label="Preview"></div>
+      </div>
+      <h3 class="ghist-title">Earlier versions</h3>
+      <p class="meta">Every save keeps the version before it (the last 20). Load one, check it, then press Save to make it live again.</p>
+      <div id="g-hist"></div>
     </div>
 
     <div data-pane="news" hidden>
@@ -472,6 +517,7 @@
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="assets/guide-render.js"></script>
 <script>
 (function () {
   var API = "https://api.sunainverse.com/admin/api";
@@ -797,13 +843,53 @@
   };
   resetNewsForm();
 
+  // ----- tools guide editor -----
+  var G = { base: 0, saved: "", loaded: false }, gTimer = null;
+  function gDirty() { return G.loaded && $("g-text").value !== G.saved; }
+  function gWhen(ts) { return ts ? new Date(ts * 1000).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "the original file"; }
+  function gStatus() {
+    say($("g-msg"), gDirty() ? "Unsaved changes" : (G.base ? "Saved " + ago(G.base) : "Showing the original guide file; nothing saved here yet."), false);
+    $("g-msg").style.color = gDirty() ? "var(--orange)" : "";
+  }
+  function gPreview() { $("g-prev").innerHTML = MonarchGuide.render($("g-text").value).html || '<p class="empty">Nothing to show yet.</p>'; }
+  function loadGuideEditor(force) {
+    if (G.loaded && gDirty() && !force) return Promise.resolve();
+    return api("/guide").then(function (d) {
+      G.base = d.updated_at || 0; G.saved = d.markdown; G.loaded = true;
+      $("g-text").value = d.markdown; gPreview(); gStatus();
+      $("g-hist").innerHTML = d.history.length ? d.history.map(function (h) {
+        return '<div class="ghrow"><span>' + (h.saved_at ? "Saved " + esc(gWhen(h.saved_at)) : "Original guide file") + ' <span class="meta">· ' + Math.max(1, Math.round(h.size / 1024)) + " KB</span></span>" +
+          '<button class="btn small" data-hist="' + h.id + '">Load into editor</button></div>';
+      }).join("") : '<p class="empty">No earlier versions yet. They appear here after your first save.</p>';
+    });
+  }
+  $("g-text").addEventListener("input", function () { clearTimeout(gTimer); gTimer = setTimeout(gPreview, 200); gStatus(); });
+  $("g-save").onclick = function () {
+    var b = $("g-save"); b.disabled = true; say($("g-msg"), "Saving…");
+    api("/guide", { method: "PUT", body: { markdown: $("g-text").value, base_updated_at: G.base } })
+      .then(function (r) { G.base = r.updated_at; G.saved = $("g-text").value; return loadGuideEditor(true); })
+      .then(function () { say($("g-msg"), "Saved. Members see it on the Tools guide now."); })
+      .catch(function (err) { say($("g-msg"), err.message, true); })
+      .then(function () { b.disabled = false; });
+  };
+  $("g-hist").onclick = function (e) {
+    var b = e.target.closest("button[data-hist]"); if (!b) return;
+    if (gDirty() && !confirm("Replace your unsaved changes in the editor with this earlier version?")) return;
+    api("/guide/history/" + b.dataset.hist).then(function (d) {
+      $("g-text").value = d.markdown; gPreview(); gStatus();
+      say($("g-msg"), "Loaded the version from " + gWhen(d.saved_at) + ". Press Save guide to make it live.");
+      $("g-text").scrollIntoView({ behavior: "smooth", block: "start" });
+    }).catch(function (err) { alert(err.message); });
+  };
+  window.addEventListener("beforeunload", function (e) { if (gDirty()) { e.preventDefault(); e.returnValue = ""; } });
+
   // ----- start -----
   function boot() {
     api("/me").then(function (me) {
       myEmail = me.email; maxDevices = me.max_devices;
       $("who-email").textContent = "Signed in as " + me.email;
       $("who").hidden = false; $("signin").hidden = true; $("app").hidden = false;
-      return Promise.all([loadRequests(), loadPeople(), loadSettings(), loadScripts(), loadNews()]);
+      return Promise.all([loadRequests(), loadPeople(), loadSettings(), loadScripts(), loadNews(), loadGuideEditor()]);
     }).catch(function (err) {
       if (err.status === 401) { $("app").hidden = true; $("who").hidden = true; $("signin").hidden = false; }
       else say($("login-msg"), err.message || "Can't reach the Monarch server right now.", true);
