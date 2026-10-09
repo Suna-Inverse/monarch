@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tools guide — Monarch</title>
-<meta name="description" content="The Monarch tools guide for members: what every tool does, step by step.">
-<link rel="canonical" href="https://monarch.sunainverse.com/guide.html">
+<title>My account — Monarch</title>
+<meta name="description" content="Your Monarch account: see the Macs you're signed in on and free up a slot yourself.">
+<link rel="canonical" href="https://monarch.sunainverse.com/account.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Monarch">
-<meta property="og:title" content="Tools guide — Monarch">
-<meta property="og:description" content="The Monarch tools guide for members: what every tool does, step by step.">
-<meta property="og:url" content="https://monarch.sunainverse.com/guide.html">
+<meta property="og:title" content="My account — Monarch">
+<meta property="og:description" content="Your Monarch account: see the Macs you're signed in on and free up a slot yourself.">
+<meta property="og:url" content="https://monarch.sunainverse.com/account.html">
 <meta property="og:image" content="https://monarch.sunainverse.com/assets/og-image.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -266,6 +266,24 @@
   }
   .signin-card .ask{margin-top:16px;color:var(--muted);font-size:.9rem}
   .signin-card .ask a{color:var(--lilac);text-decoration:underline;text-underline-offset:3px}
+  /* ---------- Account page ---------- */
+  .acc{max-width:720px}
+  .acc .card{background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:22px 24px;margin-bottom:16px}
+  .acc h2{font-size:1.25rem;font-weight:700;margin-bottom:6px}
+  .acc .meta{color:var(--soft);font-size:.95rem}
+  .acc .slots{display:flex;gap:8px;margin:12px 0 4px}
+  .acc .slot{flex:1;height:10px;border-radius:99px;background:var(--bg);border:2px solid var(--rule)}
+  .acc .slot.used{background:var(--purple);border-color:var(--purple)}
+  .mac-row{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 0;border-top:2px solid var(--rule)}
+  .mac-row:first-of-type{border-top:0}
+  .mac-row b{display:block;font-weight:700}
+  .mac-row span{color:var(--soft);font-size:.92rem}
+  .mac-row button{font:inherit;font-weight:700;font-size:.9rem;padding:8px 16px;border-radius:8px;border:2px solid #7a2b2b;background:var(--bg);color:#ff9a9a;cursor:pointer}
+  .mac-row button:disabled{opacity:.5;cursor:default}
+  .acc .note{color:var(--muted);font-size:.9rem;margin-top:10px}
+  .acc .amsg{min-height:1.4em;margin-top:8px;color:var(--soft)}
+  .acc .amsg.err{color:#ff8a8a}
+  .g-who a{color:var(--lilac);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -290,7 +308,7 @@
         <li><a href="index.html#how">How it works</a></li>
         <li><a href="index.html#download">Download</a></li>
         <li><a href="whatsnew.html">What's new</a></li>
-        <li><a href="guide.html" aria-current="page">Guide</a></li>
+        <li><a href="guide.html">Guide</a></li>
         <li><a href="about.html">About</a></li>
       </ul>
       <div class="nav-pill">
@@ -306,9 +324,9 @@
 <section class="g-head">
   <div class="wrap">
     <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Members only</span>
-    <h1>Tools guide</h1>
-    <p class="sub">What every Monarch tool does, when to use it and how, step by step. Sign in with the email address your invite went to.</p>
-    <div class="g-who" id="who" hidden><span id="who-email"></span><a href="account.html" style="color:var(--lilac);text-decoration:underline">My account</a><button id="signout">Sign out</button></div>
+    <h1>My account</h1>
+    <p class="sub">See which Macs you're signed in on, and free up a slot yourself when you get a new one. Sign in with the email address your invite went to.</p>
+    <div class="g-who" id="who" hidden><span id="who-email"></span><a href="guide.html">Tools guide</a><button id="signout">Sign out</button></div>
   </div>
 </section>
 
@@ -332,13 +350,21 @@
   </div>
 </section>
 
-<section id="guide" hidden style="border-top:0;padding-top:0">
-  <div class="wrap g-layout">
-    <aside class="g-toc">
-      <input type="search" id="q" placeholder="Search the guide" aria-label="Search the guide">
-      <details id="tocbox" open><summary>All tools</summary><nav id="toc" aria-label="Tools"></nav></details>
-    </aside>
-    <article class="g-doc" id="doc"></article>
+<section id="account" hidden style="border-top:0;padding-top:0">
+  <div class="wrap"><div class="acc">
+    <div class="card">
+      <h2 id="acc-name"></h2>
+      <div class="meta" id="acc-email"></div>
+    </div>
+    <div class="card">
+      <h2>Your Macs</h2>
+      <div class="meta" id="acc-count"></div>
+      <div class="slots" id="acc-slots"></div>
+      <div id="acc-macs"></div>
+      <div class="amsg" id="acc-msg" role="status"></div>
+      <p class="note">Signing out a Mac frees its slot straight away. The plugins on that Mac lock until someone signs in there again from the Monarch app.</p>
+    </div>
+  </div>
   </div>
 </section>
 </main>
@@ -369,115 +395,50 @@
     });
   }
   function msg(t, err) { $("msg").textContent = t || ""; $("msg").className = "msg" + (err ? " err" : ""); }
-
-  // --- small, safe Markdown renderer (headings, lists, bold, italic, code) ---
-  function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-  function inline(t) {
-    t = esc(t);
-    t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
-    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    t = t.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
-    t = t.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-    t = t.replace(/([\w.+-]+@[\w-]+\.[\w.]+)/g, '<a href="mailto:$1">$1</a>');
-    return t;
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function ago(t) {
+    var s = Math.floor(Date.now() / 1000) - t;
+    if (s < 90) return "just now";
+    if (s < 5400) return Math.round(s / 60) + " min ago";
+    if (s < 129600) return Math.round(s / 3600) + " hours ago";
+    return Math.round(s / 86400) + " days ago";
   }
-  function slug(t) { return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function since(t) { return new Date(t * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); }
+  function say(t, err) { $("acc-msg").textContent = t || ""; $("acc-msg").className = "amsg" + (err ? " err" : ""); }
 
-  function render(md) {
-    var lines = md.replace(/\r/g, "").split("\n");
-    var out = [], toc = [], para = [], stack = [], inTool = false;
-    function flushPara() { if (para.length) { out.push("<p>" + inline(para.join(" ")) + "</p>"); para = []; } }
-    function closeLists(level) {
-      while (stack.length > level) { var l = stack.pop(); out.push("</li></" + l.type + ">"); }
-    }
-    function closeTool() { flushPara(); closeLists(0); if (inTool) { out.push("</section>"); inTool = false; } }
-    lines.forEach(function (raw) {
-      var line = raw.replace(/\s+$/, "");
-      var m;
-      if (!line.trim()) { flushPara(); return; }
-      if ((m = /^# (.+)/.exec(line))) {
-        closeTool();
-        var gid = "g-" + slug(m[1]);
-        toc.push({ group: m[1], id: gid });
-        out.push('<h1 class="grp-title" id="' + gid + '">' + inline(m[1]) + "</h1>");
-        return;
-      }
-      if ((m = /^## (.+)/.exec(line))) {
-        closeTool();
-        var id = slug(m[1]);
-        toc.push({ tool: m[1], id: id });
-        out.push('<section class="tool-doc" id="' + id + '"><h2>' + inline(m[1]) + "</h2>");
-        inTool = true;
-        return;
-      }
-      if ((m = /^### (.+)/.exec(line))) { flushPara(); closeLists(0); out.push("<h3>" + inline(m[1]) + "</h3>"); return; }
-      if ((m = /^\*([^*].*)\*$/.exec(line)) && /App:/.test(line)) { flushPara(); out.push('<div class="meta">' + inline(m[1]) + "</div>"); return; }
-      if ((m = /^(\s*)([-*]|\d+\.)\s+(.*)/.exec(line))) {
-        flushPara();
-        var level = Math.floor(m[1].length / 2) + 1;
-        var type = /\d/.test(m[2]) ? "ol" : "ul";
-        if (level > stack.length + 1) level = stack.length + 1;
-        if (stack.length >= level && stack[level - 1].type !== type) closeLists(level - 1);
-        if (stack.length < level) { out.push("<" + type + "><li>"); stack.push({ type: type }); }
-        else { closeLists(level); out.push("</li><li>"); }
-        out.push(inline(m[3]));
-        return;
-      }
-      if (stack.length && /^\s+/.test(raw)) { out.push(" " + inline(line.trim())); return; }
-      closeLists(0);
-      para.push(line.trim());
-    });
-    closeTool();
-    $("doc").innerHTML = out.join("");
-    var t = "";
-    toc.forEach(function (e) {
-      if (e.group) t += '<div class="grp">' + esc(e.group) + "</div>";
-      else t += '<a href="#' + e.id + '" data-id="' + e.id + '">' + esc(e.tool) + "</a>";
-    });
-    $("toc").innerHTML = t;
-    if (location.hash) { var el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
+  function showSignin(t, err) {
+    $("account").hidden = true; $("who").hidden = true; $("signin").hidden = false;
+    $("f-email").hidden = false; $("f-code").hidden = true; msg(t || "", err);
   }
-
-  // Phones: the tool list starts folded so the guide itself is near the top.
-  if (window.matchMedia("(max-width:900px)").matches) $("tocbox").open = false;
-  document.addEventListener("click", function (e) {
-    if (e.target.closest && e.target.closest("#toc a") && window.matchMedia("(max-width:900px)").matches) $("tocbox").open = false;
-  });
-
-  $("q").addEventListener("input", function () {
-    var q = this.value.trim().toLowerCase();
-    var any = false;
-    document.querySelectorAll(".tool-doc").forEach(function (s) {
-      var hit = !q || s.textContent.toLowerCase().indexOf(q) >= 0;
-      s.hidden = !hit; if (hit) any = true;
-      var a = document.querySelector('.g-toc a[data-id="' + s.id + '"]');
-      if (a) a.hidden = !hit;
-    });
-    document.querySelectorAll(".grp-title").forEach(function (h) {
-      var n = h.nextElementSibling, vis = false;
-      while (n && !n.classList.contains("grp-title")) { if (!n.hidden) vis = true; n = n.nextElementSibling; }
-      h.hidden = !vis;
-    });
-    var e = $("g-empty"); if (e) e.remove();
-    if (!any) $("doc").insertAdjacentHTML("beforeend", '<p class="g-empty" id="g-empty">Nothing matches that search.</p>');
-  });
-
-  function showGuide(me, md) {
-    $("signin").hidden = true; $("guide").hidden = false; $("who").hidden = false;
-    $("who-email").textContent = "Signed in as " + (me || "");
-    render(md);
-  }
-  function showSignin(t) {
-    $("guide").hidden = true; $("who").hidden = true; $("signin").hidden = false;
-    $("f-email").hidden = false; $("f-code").hidden = true; msg(t || "");
+  function show(a) {
+    $("signin").hidden = true; $("account").hidden = false; $("who").hidden = false;
+    $("who-email").textContent = "Signed in as " + a.email;
+    $("acc-name").textContent = a.name || "Your account";
+    $("acc-email").textContent = a.email + " · access switched on";
+    var n = a.macs.length, max = a.max_devices || 2;
+    $("acc-count").textContent = n + " of " + max + " Macs in use" + (n >= max ? ". To use Monarch on another Mac, sign one out first." : ".");
+    var slots = ""; for (var i = 0; i < max; i++) slots += '<div class="slot' + (i < n ? " used" : "") + '"></div>';
+    $("acc-slots").innerHTML = slots;
+    $("acc-macs").innerHTML = n ? a.macs.map(function (m) {
+      return '<div class="mac-row"><div><b>' + esc(m.name || "Mac") + "</b><span>Signed in since " + since(m.created_at) + " · last check-in " + ago(m.last_seen) + "</span></div>" +
+        '<button type="button" data-id="' + esc(m.id) + '" data-name="' + esc(m.name || "this Mac") + '">Sign out this Mac</button></div>';
+    }).join("") : '<p class="meta" style="margin-top:10px">You\'re not signed in on any Mac yet. Install the Monarch app and sign in there.</p>';
   }
   function load() {
-    Promise.all([call("/me"), call("/guide")]).then(function (r) {
-      if (r[1]._status === 200) showGuide(r[0].email, r[1].markdown);
-      else showSignin();
+    call("/account").then(function (a) {
+      if (a._status === 200) show(a); else showSignin();
     }).catch(function () { showSignin("Can't reach the Monarch server right now. Try again in a moment.", true); });
   }
-
+  $("acc-macs").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-id]"); if (!b) return;
+    if (!confirm("Sign out " + b.dataset.name + "? Its Monarch plugins lock until someone signs in there again.")) return;
+    b.disabled = true; say("Signing out…");
+    call("/devices/" + encodeURIComponent(b.dataset.id) + "/signout", {}).then(function (r) {
+      if (r._status === 401) return showSignin("Your sign-in expired. Please sign in again.");
+      say(r._status === 200 ? b.dataset.name + " is signed out; its slot is free." : (r.message || "Something went wrong."), r._status !== 200);
+      return call("/account").then(function (a) { if (a._status === 200) show(a); });
+    }).catch(function () { b.disabled = false; say("Can't reach the Monarch server right now.", true); });
+  });
   $("f-email").addEventListener("submit", function (e) {
     e.preventDefault();
     email = $("email").value.trim();
@@ -499,7 +460,6 @@
   });
   $("back").addEventListener("click", function () { showSignin(); });
   $("signout").addEventListener("click", function () { call("/logout", {}).then(function () { showSignin("Signed out."); }); });
-
   load();
 })();
 </script>
