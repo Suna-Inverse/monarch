@@ -235,6 +235,14 @@
   .entry p{margin:4px 0}
   .entry ul{padding-left:1.2em;margin:4px 0}
   .news .empty{color:var(--muted);margin-top:30px}
+  /* Top bar: "My account" stays visible on phones */
+  .nav-acc a{color:var(--lilac);font-weight:700}
+  .nav-acc a:hover,.nav-acc a[aria-current]{color:var(--orange)}
+  @media (max-width:900px){
+    .nav-links{display:flex}
+    .nav-links li:not(.nav-acc){display:none}
+  }
+  @media (max-width:520px){.nav-r{gap:10px}.nav-acc a{font-size:.88rem}}
 </style>
 </head>
 <body>
@@ -254,13 +262,11 @@
     </a>
     <div class="nav-r">
       <ul class="nav-links">
-        <li><a href="index.html#suite">Suite</a></li>
-        <li><a href="index.html#panel">Tools</a></li>
-        <li><a href="index.html#how">How it works</a></li>
         <li><a href="index.html#download">Download</a></li>
         <li><a href="whatsnew.html" aria-current="page">What's new</a></li>
         <li><a href="guide.html">Guide</a></li>
         <li><a href="about.html">About</a></li>
+        <li class="nav-acc"><a href="account.html">My account</a></li>
       </ul>
       <div class="nav-pill">
         <svg class="spark"><use href="#sp"/></svg>
