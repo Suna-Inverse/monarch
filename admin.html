@@ -296,6 +296,7 @@
   .script .sbtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .script textarea,.script input{width:100%;margin-top:8px}
   .empty{color:var(--soft)}
+  .tag.shared{color:var(--lilac);border-color:var(--purple)}
   .news-form h3,.due h3{font-size:1.05rem;font-weight:700;margin-bottom:6px}
   .news-form .row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
   .news-form textarea,.due textarea{width:100%;margin-top:4px}
@@ -453,6 +454,7 @@
       </div>
       <div class="sbar">
         <input class="field" type="search" id="sq" placeholder="Search names, notes and tags">
+        <label class="switch"><input type="checkbox" id="sq-shared">Only shared</label>
         <button class="btn" id="zip" type="button">Download all (.zip)</button>
       </div>
       <div class="msg" id="sc-msg"></div>
@@ -619,21 +621,25 @@
   }
   function renderScripts() {
     var q = $("sq").value.trim().toLowerCase();
-    var list = scripts.filter(function (s) { return !q || (s.name + " " + s.note + " " + s.tags).toLowerCase().indexOf(q) >= 0; });
+    var onlyShared = $("sq-shared").checked;
+    var list = scripts.filter(function (s) { return (!onlyShared || s.shared) && (!q || (s.name + " " + s.note + " " + s.tags).toLowerCase().indexOf(q) >= 0); });
     $("scripts").innerHTML = list.length ? list.map(function (s) {
       return '<div class="script" data-id="' + s.id + '"><div>' +
-        '<div class="sname">' + esc(s.name) + "</div>" +
+        '<div class="sname">' + esc(s.name) + (s.shared ? '<span class="tag shared">Shared</span>' : "") + "</div>" +
         '<div class="meta">' + kb(s.size) + " · updated " + ago(s.updated_at) + "</div>" +
         (s.note ? '<div class="snote">' + esc(s.note) + "</div>" : "") +
         (s.tags ? '<div class="stags">' + s.tags.split(",").map(function (t) { return "<span>" + esc(t.trim()) + "</span>"; }).join("") + "</div>" : "") +
         '</div><div class="sbtns">' +
+        '<button class="btn small" data-act="share">' + (s.shared ? "Stop sharing" : "Share with members") + "</button>" +
         '<button class="btn small" data-act="dl">Download</button>' +
         '<button class="btn small" data-act="edit">Edit note</button>' +
         '<button class="btn small danger" data-act="del">Delete</button></div></div>';
     }).join("") : '<p class="empty">' + (scripts.length ? "Nothing matches that search." : "No scripts yet. Drop some above.") + "</p>";
-    say($("sc-msg"), scripts.length ? scripts.length + (scripts.length === 1 ? " script" : " scripts") + " stored." : "");
+    var nShared = scripts.filter(function (x) { return x.shared; }).length;
+    say($("sc-msg"), scripts.length ? scripts.length + (scripts.length === 1 ? " script" : " scripts") + " stored, " + nShared + " shared with members." : "");
   }
   $("sq").oninput = renderScripts;
+  $("sq-shared").onchange = renderScripts;
 
   function b64ToBlob(b64) {
     var bin = atob(b64), bytes = new Uint8Array(bin.length);
@@ -658,7 +664,10 @@
     var b = e.target.closest("button"); if (!b) return;
     var card = b.closest(".script"), id = card.dataset.id;
     var s = scripts.find(function (x) { return String(x.id) === id; });
-    if (b.dataset.act === "dl") {
+    if (b.dataset.act === "share") {
+      b.disabled = true;
+      api("/scripts/" + id, { method: "PATCH", body: { shared: !s.shared } }).then(loadScripts).catch(function (err) { b.disabled = false; alert(err.message); });
+    } else if (b.dataset.act === "dl") {
       api("/scripts/" + id).then(function (d) { save(b64ToBlob(d.content), d.name); }).catch(function (err) { alert(err.message); });
     } else if (b.dataset.act === "del") {
       if (!confirm("Delete " + s.name + "? This can't be undone.")) return;

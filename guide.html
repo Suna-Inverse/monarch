@@ -274,6 +274,20 @@
     .nav-links li:not(.nav-acc){display:none}
   }
   @media (max-width:520px){.nav-r{gap:10px}.nav-acc a{font-size:.88rem}}
+  /* Shared scripts */
+  .g-scripts-link{display:block;margin-bottom:12px;color:var(--lilac);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+  .g-shared h2{margin:12px 0 10px}
+  .g-shared .sub{max-width:760px;margin-bottom:18px}
+  .g-shared .sub b{color:var(--text)}
+  .g-shared input{width:100%;max-width:420px;font:inherit;padding:9px 12px;border-radius:8px;border:2px solid var(--rule);background:var(--row);color:var(--text);margin-bottom:16px}
+  .g-shared input:focus{outline:none;border-color:var(--yellow)}
+  .sh{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start;background:var(--row);border:3px solid var(--navy);border-radius:10px;padding:14px 18px;margin-bottom:10px}
+  .sh .n{font-weight:700;word-break:break-all}
+  .sh .m{color:var(--muted);font-size:.85rem}
+  .sh .d{color:var(--soft);white-space:pre-wrap;margin-top:4px}
+  .sh .t span{display:inline-block;font-size:.75rem;color:var(--lilac);border:1px solid var(--purple);border-radius:99px;padding:0 8px;margin:6px 6px 0 0}
+  .sh button{font:inherit;font-weight:700;font-size:.9rem;padding:8px 16px;border-radius:8px;border:2px solid var(--purple);background:var(--bg);color:var(--text);cursor:pointer}
+  @media (max-width:640px){.sh{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -341,10 +355,21 @@
 <section id="guide" hidden style="border-top:0;padding-top:0">
   <div class="wrap g-layout">
     <aside class="g-toc">
+      <a href="#shared" class="g-scripts-link" id="scripts-link" hidden>Shared scripts ↓</a>
       <input type="search" id="q" placeholder="Search the guide" aria-label="Search the guide">
       <details id="tocbox" open><summary>All tools</summary><nav id="toc" aria-label="Tools"></nav></details>
     </aside>
     <article class="g-doc" id="doc"></article>
+  </div>
+</section>
+
+<section id="shared" hidden>
+  <div class="wrap g-shared">
+    <span class="eyebrow"><svg class="spark"><use href="#sp"/></svg>Shared scripts</span>
+    <h2>InDesign scripts to download</h2>
+    <p class="sub">Handy scripts shared for Monarch members. To use one: in InDesign choose <b>Window › Utilities › Scripts</b>, right-click the <b>User</b> folder and choose <b>Reveal in Finder</b>, then put the downloaded script in that folder. It shows up in the Scripts panel straight away; double-click it to run.</p>
+    <input type="search" id="sq" placeholder="Search scripts" aria-label="Search scripts">
+    <div id="shared-list"></div>
   </div>
 </section>
 </main>
@@ -474,12 +499,47 @@
     render(md);
   }
   function showSignin(t) {
-    $("guide").hidden = true; $("who").hidden = true; $("signin").hidden = false;
+    $("guide").hidden = true; $("who").hidden = true; $("signin").hidden = false; $("shared").hidden = true;
     $("f-email").hidden = false; $("f-code").hidden = true; msg(t || "");
   }
+  // ----- shared scripts -----
+  var shared = [];
+  function sesc(t) { return String(t == null ? "" : t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function kb(n) { return n < 1024 ? n + " B" : Math.round(n / 1024) + " KB"; }
+  function renderShared() {
+    var q = $("sq").value.trim().toLowerCase();
+    var list = shared.filter(function (x) { return !q || (x.name + " " + x.note + " " + x.tags).toLowerCase().indexOf(q) >= 0; });
+    $("shared-list").innerHTML = list.length ? list.map(function (x) {
+      return '<div class="sh"><div><div class="n">' + sesc(x.name) + '</div><div class="m">' + kb(x.size) + "</div>" +
+        (x.note ? '<div class="d">' + sesc(x.note) + "</div>" : "") +
+        (x.tags ? '<div class="t">' + x.tags.split(",").map(function (t) { return "<span>" + sesc(t.trim()) + "</span>"; }).join("") + "</div>" : "") +
+        '</div><button type="button" data-id="' + x.id + '">Download</button></div>';
+    }).join("") : '<p class="g-empty">Nothing matches that search.</p>';
+  }
+  function loadShared() {
+    call("/scripts").then(function (d) {
+      shared = (d && d.scripts) || [];
+      $("shared").hidden = !shared.length; $("scripts-link").hidden = !shared.length;
+      if (shared.length) renderShared();
+    }).catch(function () {});
+  }
+  $("sq").addEventListener("input", renderShared);
+  $("shared-list").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-id]"); if (!b) return;
+    b.disabled = true;
+    call("/scripts/" + b.dataset.id).then(function (d) {
+      b.disabled = false;
+      if (d._status !== 200) { alert(d.message || "That script isn't available."); return; }
+      var bin = atob(d.content), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([bytes], { type: "application/octet-stream" })); a.download = d.name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    }).catch(function () { b.disabled = false; alert("Can't reach the Monarch server right now."); });
+  });
+
   function load() {
     Promise.all([call("/me"), call("/guide")]).then(function (r) {
-      if (r[1]._status === 200) { showGuide(r[0].email, r[1].markdown); $("admin-link").hidden = !r[0].admin; }
+      if (r[1]._status === 200) { showGuide(r[0].email, r[1].markdown); $("admin-link").hidden = !r[0].admin; loadShared(); }
       else showSignin();
     }).catch(function () { showSignin("Can't reach the Monarch server right now. Try again in a moment.", true); });
   }
