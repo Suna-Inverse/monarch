@@ -635,7 +635,7 @@
 
   // ----- people -----
   // Versions each Mac reported at its last check-in (app 0.3.6+), orange when behind the latest release.
-  var SHORT = { "app": "App", "indesign": "InDesign", "photoshop": "Photoshop", "illustrator": "Illustrator", "after-effects": "After Effects", "monarch-chrome-extension": "Chrome" };
+  var SHORT = { "app": "App", "indesign": "InDesign", "photoshop": "Photoshop", "illustrator": "Illustrator", "illustrator-great-sage": "Great Sage Ai", "after-effects": "After Effects", "after-effects-great-sage": "Great Sage Ae", "monarch-chrome-extension": "Chrome" };
   function verLt(a, b) {
     var x = String(a).split("."), y = String(b).split(".");
     for (var i = 0; i < Math.max(x.length, y.length); i++) { var p = parseInt(x[i] || 0, 10), q = parseInt(y[i] || 0, 10); if (p !== q) return p < q; }
@@ -937,7 +937,7 @@
 
   // ----- what's new -----
   var NEWS = { entries: [], current: [] };
-  var PNAMES = { "app": "Monarch app", "indesign": "Suna Monarch (InDesign)", "photoshop": "Monarch (Photoshop)", "illustrator": "Monarch (Illustrator)", "after-effects": "Monarch (After Effects)", "monarch-chrome-extension": "Monarch (Chrome)" };
+  var PNAMES = { "app": "Monarch app", "indesign": "Suna Monarch (InDesign)", "photoshop": "Monarch (Photoshop)", "illustrator": "Monarch (Illustrator)", "illustrator-great-sage": "The Great Sage (Illustrator)", "after-effects": "Monarch (After Effects)", "after-effects-great-sage": "The Great Sage (After Effects)", "monarch-chrome-extension": "Monarch (Chrome)" };
   function today() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function toTs(v) { return Math.floor(new Date(v + "T12:00:00Z").getTime() / 1000); }
   function toDate(ts) { return new Date(ts * 1000).toISOString().slice(0, 10); }
