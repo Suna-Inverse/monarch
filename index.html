@@ -316,6 +316,16 @@
         <div class="tool" data-t="pretender"><h3><svg class="spark"><use href="#sp"/></svg>Pretender</h3><p>Loads a CSV of translations and replaces them one by one, or all at once.</p><small>Mini Sage</small></div>
         <div class="tool" data-t="reroute"><h3><svg class="spark"><use href="#sp"/></svg>Reroute</h3><p>Points a missing link at a folder and relinks it, searching every subfolder.</p><small>Mini Sage</small></div>
         <div class="tool" data-t="taster"><h3><svg class="spark"><use href="#sp"/></svg>Mini Taster</h3><p>Exports to PDF with your chosen preset, then saves and closes the file if you want.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="usurper"><h3><svg class="spark"><use href="#sp"/></svg>Mini Usurper</h3><p>Keeps translations in a shared list, finds them in the document and swaps translated images too.</p><small>Panel</small></div>
+        <div class="tool" data-t="forsight"><h3><svg class="spark"><use href="#sp"/></svg>Mini Forsight</h3><p>Builds a folder spread step by step: layers, notes, prices, product groups and adverts.</p><small>Panel</small></div>
+        <div class="tool" data-t="portal"><h3><svg class="spark"><use href="#sp"/></svg>Portal</h3><p>Finds the supplier ads that belong on the open spread, with their delivery status.</p><small>Mini Sage</small></div>
+        <div class="tool" data-t="ean"><h3><svg class="spark"><use href="#sp"/></svg>EAN matcher</h3><p>Relinks images named by EAN code to the codes the document expects.</p><small>Relayter</small></div>
+        <div class="tool" data-t="relay"><h3><svg class="spark"><use href="#sp"/></svg>Relay</h3><p>Opens the item you're looking at in the browser as a ready InDesign file, links included.</p><small>Bridge</small></div>
+        <div class="tool" data-t="foundation"><h3><svg class="spark"><use href="#sp"/></svg>Foundation</h3><p>Reads, edits and tests the layout rules of a campaign, right from InDesign.</p><small>The Great Sage</small></div>
+        <div class="tool" data-t="svg"><h3><svg class="spark"><use href="#sp"/></svg>The Great Sage SVG</h3><p>Saves the document as clean, editable SVG, ready for the web and animation.</p><small>Panel</small></div>
+        <div class="tool" data-t="html5"><h3><svg class="spark"><use href="#sp"/></svg>The Great Sage HTML5</h3><p>Turns a page into a ready HTML5 banner package for every size.</p><small>Panel</small></div>
+        <div class="tool" data-t="gsai"><h3><svg class="spark"><use href="#sp"/></svg>The Great Sage (Illustrator)</h3><p>Styles, shapes, paths, colour, text and batch tools, built on Illustrator itself.</p><small>Illustrator</small></div>
+        <div class="tool" data-t="gsae"><h3><svg class="spark"><use href="#sp"/></svg>The Great Sage (After Effects)</h3><p>Motion tools for animating layouts, in the Monarch look.</p><small>After Effects</small></div>
         <div class="tool" data-t="ae"><h3><svg class="spark"><use href="#sp"/></svg>InDesign → After Effects</h3><p>Sends pages, selections and links from print to motion.</p><small>Bridge</small></div>
       </div>
     </div>
@@ -399,6 +409,16 @@
     pretender:{msg:"Pretender — 128 translations replaced",steps:8,label:"Replacing"},
     reroute:{msg:"Reroute — missing link found and relinked",steps:4,label:"Searching folder"},
     taster:{msg:"Mini Taster — PDF exported",steps:3,label:"Exporting page"},
+    usurper:{msg:"Mini Usurper — 64 translations and 12 images swapped",steps:8,label:"Translating"},
+    forsight:{msg:"Mini Forsight — spread built in 6 steps",steps:6,label:"Building step"},
+    portal:{msg:"Portal — 4 ads matched, 3 ready",steps:5,label:"Matching ad"},
+    ean:{msg:"EAN matcher — 37 images relinked",steps:7,label:"Matching image"},
+    relay:{msg:"Relay — document ready and opened",steps:8,label:"Downloading link"},
+    foundation:{msg:"Foundation — rule simulated on the page",steps:5,label:"Reading rule"},
+    svg:{msg:"The Great Sage SVG — 4 pages saved as SVG",steps:4,label:"Writing page"},
+    html5:{msg:"The Great Sage HTML5 — 3 banner sizes packed",steps:3,label:"Packing size"},
+    gsai:{msg:"The Great Sage (Illustrator) — block shadow rebuilt",steps:5,label:"Styling path"},
+    gsae:{msg:"The Great Sage (After Effects) — layers animated",steps:6,label:"Keyframing layer"},
     ae:{msg:"sent layout to After Effects",steps:9,label:"Sending layer"}
   };
   var st=document.getElementById('st'),stT=document.getElementById('stTxt'),log=document.getElementById('log'),
